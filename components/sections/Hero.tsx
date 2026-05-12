@@ -1,32 +1,11 @@
-/**
- * WHY 'use client': This component uses:
- * 1. Framer Motion animations (need browser to run)
- * 2. Spline 3D scene (needs WebGL, browser only)
- * 3. Dynamic import (we control when JS loads)
- *
- * WHY dynamic import for Spline:
- * Spline is a heavy 3D library. If we import it normally it
- * blocks the entire page from loading until Spline downloads.
- * dynamic() with ssr:false means:
- * - Server renders the page immediately without waiting for Spline
- * - Spline loads in the browser after the page is visible
- * - User sees your name and text instantly, 3D loads after
- * This is called "code splitting" — a key performance technique.
- */
 'use client'
 
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 import Button from '@/components/ui/Button'
 import { MapPin, Mail, ExternalLink } from 'lucide-react'
 
-/**
- * WHY ssr: false for Spline:
- * Spline uses WebGL which only exists in the browser.
- * If Next.js tries to render it on the server it crashes
- * because the server has no WebGL context.
- * ssr: false tells Next.js "only render this in the browser".
- */
 const Spline = dynamic(() => import('@splinetool/react-spline'), {
   ssr: false,
   loading: () => (
@@ -41,21 +20,10 @@ const Spline = dynamic(() => import('@splinetool/react-spline'), {
   ),
 })
 
-/**
- * WHY define animation variants outside the component:
- * If defined inside, they get recreated on every render.
- * Outside means they're created once and reused.
- *
- * 'container' staggers children — each child animates
- * after the previous one with a 0.15s delay.
- * This creates the cascading fade-up effect.
- */
 const containerVariants = {
   hidden: {},
   visible: {
-    transition: {
-      staggerChildren: 0.15,
-    },
+    transition: { staggerChildren: 0.15 },
   },
 }
 
@@ -64,50 +32,161 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
+    transition: { duration: 0.6, ease: 'easeOut' as const },
   },
 }
 
 const stats = [
-  { number: '3+',   label: 'Years Exp'   },
-  { number: '80%',  label: 'Efficiency↑' },
-  { number: '40%',  label: 'DB Gain'     },
+  { number: '3+',  label: 'Years Exp'   },
+  { number: '80%', label: 'Efficiency↑' },
+  { number: '40%', label: 'DB Gain'     },
 ]
 
 export default function Hero() {
+  /**
+   * WHY useRef:
+   * We need to hold a reference to the Spline app object
+   * that persists between renders without triggering a re-render.
+   * useState would cause a re-render every time it updates —
+   * useRef stores the value silently in the background.
+   */
+  const splineRef = useRef<any>(null)
+
+  /**
+   * WHY this function:
+   * Spline calls this when the 3D scene finishes loading.
+   * It passes back the splineApp object which gives us
+   * programmatic access to every object in the 3D scene.
+   * We store it in splineRef so our mouse listener can use it.
+   */
+  function onSplineLoad(splineApp: any) {
+    splineRef.current = splineApp
+  }
+
+  useEffect(() => {
+    /**
+     * WHY global window mousemove listener:
+     * Spline's built-in cursor tracking only fires when the
+     * mouse is inside the Spline canvas element.
+     * By listening on the window instead, we get coordinates
+     * from anywhere on the page — navbar, text, buttons, anywhere.
+     *
+     * WHY lerp (linear interpolation):
+     * Without it the head snaps instantly to the cursor position
+     * which looks robotic and jarring.
+     * Lerp moves from current position toward target by a small
+     * fraction each frame — creating smooth, natural lag that
+     * makes the character feel alive.
+     *
+     * WHY requestAnimationFrame:
+     * This runs our animation loop in sync with the browser's
+     * repaint cycle (~60fps). It's more efficient than setInterval
+     * and automatically pauses when the tab is not visible.
+     */
+    let targetX = 0
+    let targetY = 0
+    let currentX = 0
+    let currentY = 0
+    let animFrame: number
+
+    /**
+     * ⚠️ IMPORTANT: Replace 'Head' with the exact object name
+     * from your Spline scene.
+     * How to find it:
+     * 1. Open your scene in spline.design editor
+     * 2. Click the character's head in the 3D viewport
+     * 3. Look at the top of the right panel — that's the name
+     * Common names: 'Head', 'head', 'Character_Head', 'Sphere'
+     */
+    const HEAD_OBJECT_NAME = 'Head'
+
+    /**
+     * WHY lerp function:
+     * lerp(0, 1, 0.05) returns 0.05
+     * lerp(0.05, 1, 0.05) returns 0.097
+     * Each frame we get slightly closer to the target.
+     * The 0.05 factor controls smoothness:
+     * lower = slower/smoother, higher = faster/snappier
+     */
+    function lerp(start: number, end: number, factor: number) {
+      return start + (end - start) * factor
+    }
+
+    function handleMouseMove(e: MouseEvent) {
+      /**
+       * WHY normalize to -1 to 1:
+       * Raw pixel coordinates depend on screen size.
+       * Normalized values (-1 to 1) work on any screen.
+       * 0 = center, -1 = left/top edge, 1 = right/bottom edge
+       */
+      targetX = (e.clientX / window.innerWidth  - 0.5) * 2
+      targetY = (e.clientY / window.innerHeight - 0.5) * 2
+    }
+
+    function animate() {
+      // Smoothly chase the target position
+      currentX = lerp(currentX, targetX, 0.05)
+      currentY = lerp(currentY, targetY, 0.05)
+
+      if (splineRef.current) {
+        const head = splineRef.current.findObjectByName(HEAD_OBJECT_NAME)
+
+        if (head) {
+          /**
+           * WHY multiply by 0.3 and 0.2:
+           * Raw -1 to 1 values rotate the head too far — almost
+           * 180 degrees which looks completely broken.
+           * 0.3 = about 17 degrees max horizontal rotation
+           * 0.2 = about 11 degrees max vertical rotation
+           * Less vertical movement looks more natural for a
+           * seated character who mostly looks left and right.
+           */
+          head.rotation.y = currentX * 0.3
+          head.rotation.x = currentY * -0.2
+        }
+      }
+
+      animFrame = requestAnimationFrame(animate)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    animate()
+
+    /**
+     * WHY cleanup function:
+     * When the component unmounts (user navigates away),
+     * we MUST cancel these or they keep running forever —
+     * leaking memory and burning CPU in the background.
+     * This is one of the most important useEffect patterns.
+     */
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      cancelAnimationFrame(animFrame)
+    }
+  }, [])
+  /**
+   * WHY empty dependency array []:
+   * We only want this effect to run once when the component
+   * mounts — not on every render. Empty array = run once.
+   * If we omitted it, it would re-run on every render and
+   * add a new event listener each time, causing bugs.
+   */
+
   return (
     <section
       id="hero"
-      className="
-        relative min-h-screen
-        flex items-center
-        overflow-hidden
-        pt-20
-      "
+      className="relative min-h-screen flex items-center overflow-hidden pt-20"
     >
-      {/* ── Background decorative circles ── */}
-      {/**
-       * WHY: Subtle background shapes add depth to the
-       * flat cream background without distracting from content.
-       * pointer-events-none means they never block clicks.
-       * aria-hidden means screen readers skip them.
-       */}
-      <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="
-          absolute -top-40 -right-40
-          w-96 h-96 rounded-full
-          bg-[var(--color-clay-orange)]
-          opacity-[0.06] blur-3xl
-        " />
-        <div className="
-          absolute top-1/2 -left-20
-          w-72 h-72 rounded-full
-          bg-[var(--color-clay-navy)]
-          opacity-[0.04] blur-3xl
-        " />
+      {/* Background decorative circles */}
+      <div
+        aria-hidden
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+      >
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[var(--color-clay-orange)] opacity-[0.06] blur-3xl" />
+        <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-[var(--color-clay-navy)] opacity-[0.04] blur-3xl" />
       </div>
 
-      {/* ── Main content ── */}
+      {/* Main content grid */}
       <div className="
         relative w-full max-w-7xl mx-auto
         px-6 md:px-12
@@ -116,7 +195,7 @@ export default function Hero() {
         items-center
       ">
 
-        {/* ── LEFT: Text content ── */}
+        {/* LEFT: Text content */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -128,8 +207,7 @@ export default function Hero() {
             <span className="
               inline-flex items-center gap-2
               bg-white rounded-full
-              px-4 py-2
-              text-sm font-bold
+              px-4 py-2 text-sm font-bold
               text-[var(--color-clay-orange)]
               shadow-md shadow-orange-100
             ">
@@ -146,8 +224,7 @@ export default function Hero() {
           <motion.div variants={itemVariants}>
             <h1 className="
               text-5xl md:text-6xl lg:text-7xl
-              font-black leading-[1.1]
-              tracking-tight
+              font-black leading-[1.1] tracking-tight
               text-[var(--color-clay-navy)]
             ">
               Hi, my<br />
@@ -160,11 +237,8 @@ export default function Hero() {
 
           {/* Title + location */}
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
-            <p className="
-              text-xl font-bold
-              text-[var(--color-clay-muted)]
-            ">
-              Full Stack Engineer  .NET · Azure · React
+            <p className="text-xl font-bold text-[var(--color-clay-muted)]">
+              Full-Stack Engineer — .NET · Azure · React
             </p>
             <div className="flex items-center gap-1.5 text-sm text-[var(--color-clay-muted)]">
               <MapPin size={14} />
@@ -175,11 +249,7 @@ export default function Hero() {
           {/* Description */}
           <motion.p
             variants={itemVariants}
-            className="
-              text-base leading-relaxed
-              text-[var(--color-clay-muted)]
-              max-w-md
-            "
+            className="text-base leading-relaxed text-[var(--color-clay-muted)] max-w-md"
           >
             I build scalable full-stack applications with .NET and Azure,
             and craft intuitive user experiences with modern JS frameworks.
@@ -191,10 +261,7 @@ export default function Hero() {
           </motion.p>
 
           {/* CTA Buttons */}
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-wrap gap-3"
-          >
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
             <Button
               size="lg"
               onClick={() =>
@@ -221,10 +288,7 @@ export default function Hero() {
           </motion.div>
 
           {/* Stats */}
-          <motion.div
-            variants={itemVariants}
-            className="flex gap-4 pt-2"
-          >
+          <motion.div variants={itemVariants} className="flex gap-4 pt-2">
             {stats.map((stat) => (
               <div
                 key={stat.label}
@@ -236,10 +300,7 @@ export default function Hero() {
                   min-w-[80px]
                 "
               >
-                <span className="
-                  text-2xl font-black
-                  text-[var(--color-clay-navy)]
-                ">
+                <span className="text-2xl font-black text-[var(--color-clay-navy)]">
                   {stat.number}
                 </span>
                 <span className="
@@ -254,7 +315,7 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* ── RIGHT: 3D Spline Scene ── */}
+        {/* RIGHT: Spline 3D Scene */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -264,26 +325,15 @@ export default function Hero() {
             h-[480px] lg:h-[600px]
             w-full
             rounded-3xl
-            overflow-hidden
           "
         >
-          {/**
-           * WHY this specific Spline URL:
-           * This is a public clay-style developer scene from
-           * Spline's community. We'll replace this URL with
-           * your own custom scene in a later step once you
-           * create your Spline account and customize it.
-           * For now it proves the integration works.
-           */}
-          {/* Temporary placeholder until Spline scene is set up */}
-          <div className="w-full h-full bg-[var(--color-cream-200)] rounded-3xl flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-8xl mb-4">👨‍💻</div>
-              <Spline scene="https://prod.spline.design/lEFhySrerrKDJmTY/scene.splinecode"/>
-            </div>
-          </div>
+          <Spline
+            scene="https://prod.spline.design/lEFhySrerrKDJmTY/scene.splinecode"
+            onLoad={onSplineLoad}
+            style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          />
 
-          {/* Gradient fade at bottom so scene blends into page */}
+          {/* Gradient fade at bottom — blends scene into page */}
           <div className="
             absolute bottom-0 left-0 right-0 h-24
             bg-gradient-to-t from-[var(--color-cream-100)] to-transparent
@@ -292,7 +342,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* ── Scroll indicator ── */}
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
