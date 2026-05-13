@@ -238,7 +238,7 @@ export default function Hero() {
           {/* Title + location */}
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
             <p className="text-xl font-bold text-[var(--color-clay-muted)]">
-              Full-Stack Engineer — .NET · Azure · React
+              Full Stack Engineer .NET · Azure · React
             </p>
             <div className="flex items-center gap-1.5 text-sm text-[var(--color-clay-muted)]">
               <MapPin size={14} />
