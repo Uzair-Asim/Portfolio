@@ -16,7 +16,7 @@ import Link from 'next/link'
 import Button from './ui/Button'
 
 const navLinks = [
-  { label: 'About',      href: '#about'      },
+  { label: 'About',      href: '#hero'      },
   { label: 'Skills',     href: '#skills'     },
   { label: 'Experience', href: '#experience' },
   { label: 'Projects',   href: '#projects'   },
