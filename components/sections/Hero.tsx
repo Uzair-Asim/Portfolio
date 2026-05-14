@@ -63,6 +63,8 @@ export default function Hero() {
     splineRef.current = splineApp
   }
 
+  let lastFrame = 0
+
   useEffect(() => {
     /**
      * WHY global window mousemove listener:
@@ -113,12 +115,16 @@ export default function Hero() {
     }
 
     function handleMouseMove(e: MouseEvent) {
+      const now = Date.now()
       /**
-       * WHY normalize to -1 to 1:
-       * Raw pixel coordinates depend on screen size.
-       * Normalized values (-1 to 1) work on any screen.
-       * 0 = center, -1 = left/top edge, 1 = right/bottom edge
+       * WHY 16ms throttle:
+       * 16ms = ~60fps. There's no point processing mouse events
+       * faster than the screen can refresh. Throttling to 16ms
+       * means we process at most 60 updates per second instead
+       * of potentially 200+ which wastes CPU.
        */
+      if (now - lastFrame < 16) return
+      lastFrame = now
       targetX = (e.clientX / window.innerWidth  - 0.5) * 2
       targetY = (e.clientY / window.innerHeight - 0.5) * 2
     }
@@ -327,11 +333,11 @@ export default function Hero() {
             rounded-3xl
           "
         >
-          <Spline
+          {/* <Spline
             scene="https://prod.spline.design/lEFhySrerrKDJmTY/scene.splinecode"
             onLoad={onSplineLoad}
             style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-          />
+          /> */}
 
           {/* Gradient fade at bottom — blends scene into page */}
           <div className="

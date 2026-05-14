@@ -77,8 +77,8 @@ function TiltCard({ project, index }: {
    * stiffness: how quickly it reaches the target (higher = faster)
    * damping: how much it oscillates before settling (higher = less bounce)
    */
-  const springX = useSpring(mouseX, { stiffness: 150, damping: 20 })
-  const springY = useSpring(mouseY, { stiffness: 150, damping: 20 })
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 })
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 })
 
   /**
    * WHY useTransform:

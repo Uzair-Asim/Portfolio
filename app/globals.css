@@ -70,4 +70,11 @@
     background: var(--color-clay-orange);
     border-radius: 3px;
   }
+
+  [class*="animate-"],
+  [style*="transform"],
+  [style*="opacity"] {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
 }
