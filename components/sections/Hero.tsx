@@ -295,7 +295,8 @@ export default function Hero({ hero }: { hero: IHero | null }) {
               src="/images/desk-scene.png"
               alt="3D desk setup"
               fill
-              className="object-cover object-center scale-121"
+              className="object-cover object-center"
+              style={{ transform: 'scale(2.01)' }}
               priority
             />
             <div className="

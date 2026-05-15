@@ -67,7 +67,10 @@ export default function RootLayout({
    */
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${nunito.variable} ${spaceMono.variable}`}>
+      <body
+        className={`${nunito.variable} ${spaceMono.variable}`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>
