@@ -64,6 +64,27 @@ export interface IHero {
   }[]
 }
 
+/**
+ * WHY IContact as a top-level schema:
+ * Contact details appear in multiple places — Contact section,
+ * footer, Projects GitHub button, meta tags. Storing them once
+ * in the DB and reading them everywhere means you update your
+ * email in one place and it propagates across the entire site.
+ *
+ * WHY website is optional:
+ * Not everyone has a personal website. Making it optional
+ * means the schema doesn't enforce a field that might be
+ * empty for a long time. The UI simply hides it when empty.
+ */
+export interface IContact {
+  email:    string
+  phone:    string
+  linkedin: string
+  github:   string
+  website?: string
+  location: string
+}
+
 export interface IPortfolio extends Document {
   hero:         IHero
   skills:       ISkillCategory[]
@@ -71,6 +92,7 @@ export interface IPortfolio extends Document {
   projects:     IProject[]
   education:    IEducation[]
   achievements: IAchievement[]
+  contact:      IContact
   updatedAt:    Date
 }
 
@@ -137,14 +159,32 @@ const AchievementSchema = new Schema<IAchievement>({
   text: { type: String, required: true },
 })
 
+const ContactSchema = new Schema<IContact>({
+  email:    { type: String, required: true },
+  phone:    { type: String, required: true },
+  linkedin: { type: String, required: true },
+  github:   { type: String, required: true },
+  website:  { type: String, default: ''    },
+  location: { type: String, required: true },
+})
+
 const PortfolioSchema = new Schema<IPortfolio>(
   {
-    hero:         { type: HeroSchema,                  required: true },
-    skills:       { type: [SkillCategorySchema],       default: []    },
-    experience:   { type: [ExperienceSchema],          default: []    },
-    projects:     { type: [ProjectSchema],             default: []    },
-    education:    { type: [EducationSchema],           default: []    },
-    achievements: { type: [AchievementSchema],         default: []    },
+    hero:         { type: HeroSchema,            required: true },
+    skills:       { type: [SkillCategorySchema], default: []    },
+    experience:   { type: [ExperienceSchema],    default: []    },
+    projects:     { type: [ProjectSchema],       default: []    },
+    education:    { type: [EducationSchema],     default: []    },
+    achievements: { type: [AchievementSchema],   default: []    },
+    /**
+     * WHY contact is required:
+     * Unlike skills or projects which can be empty arrays,
+     * a portfolio without contact details is broken by definition.
+     * Making it required means the seed must always include it
+     * and Mongoose throws a clear error if it's missing rather
+     * than silently saving an incomplete document.
+     */
+    contact:      { type: ContactSchema,         required: true },
   },
   {
     /**

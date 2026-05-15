@@ -1,77 +1,58 @@
-/**
- * WHY 'use client':
- * Framer Motion's whileInView and hover animations need
- * the browser to detect scroll position and mouse events.
- * Server components can't do either of those things.
- */
 'use client'
 
 import { motion } from 'framer-motion'
 import Badge from '@/components/ui/Badge'
+import type { ISkillCategory } from '@/models/Portfolio'
 
 /**
- * WHY define data outside the component:
- * This data never changes during runtime so there's no reason
- * to recreate it on every render. Keeping it outside means
- * it's created once when the module loads and reused forever.
- *
- * Later in Phase 3 we'll replace this hardcoded array with
- * data fetched from MongoDB — but the component structure
- * stays exactly the same. That's the beauty of separating
- * data from presentation.
+ * WHY color and borderColor are derived here not in the schema:
+ * These are purely presentational — they're Tailwind classes
+ * that control how each card looks. They have nothing to do
+ * with the actual skill data. Storing Tailwind classes in a
+ * database is an anti-pattern — if you ever change your design
+ * system you'd have to update the DB instead of just CSS.
+ * We map category titles to colors here in the component
+ * where presentation decisions belong.
  */
-const skillCategories = [
-  {
-    icon: '⚙️',
-    title: 'Backend & Languages',
-    color: 'from-blue-50 to-blue-100/50',
+const CATEGORY_STYLES: Record<string, { color: string; borderColor: string }> = {
+  'Backend & Languages': {
+    color:       'from-blue-50 to-blue-100/50',
     borderColor: 'hover:border-blue-200',
-    skills: ['C#', '.NET Core', 'ASP.NET MVC', 'Entity Framework', 'REST APIs'],
   },
-  {
-    icon: '🎨',
-    title: 'Frontend',
-    color: 'from-orange-50 to-orange-100/50',
+  'Frontend': {
+    color:       'from-orange-50 to-orange-100/50',
     borderColor: 'hover:border-orange-200',
-    skills: ['React', 'Angular', 'Vue', 'TypeScript', 'JavaScript', 'Tailwind', 'Bootstrap'],
   },
-  {
-    icon: '☁️',
-    title: 'Cloud & Databases',
-    color: 'from-sky-50 to-sky-100/50',
+  'Cloud & Databases': {
+    color:       'from-sky-50 to-sky-100/50',
     borderColor: 'hover:border-sky-200',
-    skills: ['Azure Blob', 'Azure Functions', 'Cosmos DB', 'SQL Server', 'PostgreSQL', 'MongoDB'],
   },
-  {
-    icon: '🏗️',
-    title: 'Architecture',
-    color: 'from-purple-50 to-purple-100/50',
+  'Architecture': {
+    color:       'from-purple-50 to-purple-100/50',
     borderColor: 'hover:border-purple-200',
-    skills: ['Microservices', 'Event-Driven', 'RESTful API', 'Cloud Automation', 'Fault-Tolerant'],
   },
-  {
-    icon: '🛠️',
-    title: 'Tools & Platforms',
-    color: 'from-green-50 to-green-100/50',
+  'Tools & Platforms': {
+    color:       'from-green-50 to-green-100/50',
     borderColor: 'hover:border-green-200',
-    skills: ['Git', 'GitHub', 'Azure DevOps', 'Postman', 'VS Code', 'Stripe', 'Sanity.io'],
   },
-  {
-    icon: '🤖',
-    title: 'AI & Methodology',
-    color: 'from-rose-50 to-rose-100/50',
+  'AI & Methodology': {
+    color:       'from-rose-50 to-rose-100/50',
     borderColor: 'hover:border-rose-200',
-    skills: ['Gemini API', 'MS Copilot', 'AI Integration', 'Agile', 'Scrum', 'MVVM'],
   },
-]
+}
 
 /**
- * WHY this variant pattern:
- * 'container' with staggerChildren means each child card
- * animates in one after another with a 0.1s delay between them.
- * Without stagger all 6 cards would animate simultaneously —
- * less visually interesting and harder to follow.
+ * WHY a default style fallback:
+ * If you add a new skill category in the admin panel with a
+ * title that doesn't match the map above, it won't crash —
+ * it just gets a neutral gray style. This makes the component
+ * resilient to new data without requiring a code change.
  */
+const DEFAULT_STYLE = {
+  color:       'from-gray-50 to-gray-100/50',
+  borderColor: 'hover:border-gray-200',
+}
+
 const containerVariants = {
   hidden: {},
   visible: {
@@ -88,7 +69,7 @@ const cardVariants = {
   },
 }
 
-export default function Skills() {
+export default function Skills({ skills }: { skills: ISkillCategory[] }) {
   return (
     <section
       id="skills"
@@ -100,18 +81,10 @@ export default function Skills() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          /**
-           * WHY viewport={{ once: true }}:
-           * We only want the animation to play once — the first
-           * time the section scrolls into view. Without this it
-           * replays every time you scroll up and back down,
-           * which feels cheap and annoying.
-           */
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          {/* Section label */}
           <p className="
             font-mono text-sm font-bold uppercase tracking-widest
             text-[var(--color-clay-orange)]
@@ -128,8 +101,6 @@ export default function Skills() {
             ">
               Skills &amp; Stack
             </h2>
-
-            {/* Decorative line */}
             <div className="
               hidden md:block flex-1 max-w-xs
               h-px mb-3 ml-6
@@ -150,13 +121,6 @@ export default function Skills() {
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          /**
-           * WHY whileInView here instead of animate:
-           * animate triggers immediately on page load even if
-           * the element is off-screen. whileInView waits until
-           * the element enters the viewport — so the animation
-           * only plays when the user actually sees it.
-           */
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
           className="
@@ -164,60 +128,62 @@ export default function Skills() {
             gap-5
           "
         >
-          {skillCategories.map((category) => (
-            <motion.div
-              key={category.title}
-              variants={cardVariants}
-              /**
-               * WHY whileHover:
-               * Subtle lift effect on hover makes cards feel
-               * interactive and tactile — like physical cards
-               * being picked up. Small details like this are
-               * what separate good portfolios from great ones.
-               */
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className={`
-                relative p-6
-                bg-white rounded-2xl
-                border border-[var(--color-cream-300)]
-                ${category.borderColor}
-                shadow-sm hover:shadow-md
-                transition-shadow duration-300
-                cursor-default
-                overflow-hidden
-              `}
-            >
-              {/* Card background gradient */}
-              <div className={`
-                absolute inset-0 bg-gradient-to-br ${category.color}
-                opacity-40 pointer-events-none
-              `} />
+          {/**
+           * WHY sort by order:
+           * MongoDB doesn't guarantee document array order.
+           * The order field we defined in the schema lets you
+           * control exactly which category appears first, second,
+           * etc. from the admin panel.
+           */}
+          {[...skills]
+            .sort((a, b) => a.order - b.order)
+            .map((category) => {
+              const style = CATEGORY_STYLES[category.title] ?? DEFAULT_STYLE
+              return (
+                <motion.div
+                  key={category.title}
+                  variants={cardVariants}
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                  className={`
+                    relative p-6
+                    bg-white rounded-2xl
+                    border border-[var(--color-cream-300)]
+                    ${style.borderColor}
+                    shadow-sm hover:shadow-md
+                    transition-shadow duration-300
+                    cursor-default
+                    overflow-hidden
+                  `}
+                >
+                  {/* Card background gradient */}
+                  <div className={`
+                    absolute inset-0 bg-gradient-to-br ${style.color}
+                    opacity-40 pointer-events-none
+                  `} />
 
-              {/* Card content */}
-              <div className="relative">
-                {/* Icon + title */}
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">{category.icon}</span>
-                  <h3 className="
-                    font-mono text-xs font-bold
-                    uppercase tracking-wider
-                    text-[var(--color-clay-navy)]
-                  ">
-                    {category.title}
-                  </h3>
-                </div>
-
-                {/* Skill badges */}
-                <div className="flex flex-wrap gap-2">
-                  {category.skills.map((skill) => (
-                    <Badge key={skill} variant="default">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+                  {/* Card content */}
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-2xl">{category.icon}</span>
+                      <h3 className="
+                        font-mono text-xs font-bold
+                        uppercase tracking-wider
+                        text-[var(--color-clay-navy)]
+                      ">
+                        {category.title}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {category.skills.map((skill) => (
+                        <Badge key={skill} variant="default">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
         </motion.div>
       </div>
     </section>

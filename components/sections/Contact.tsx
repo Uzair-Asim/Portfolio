@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
+import type { IContact } from '@/models/Portfolio'
 
 function LinkedInIcon({ size = 20 }: { size?: number }) {
   return (
@@ -17,40 +18,44 @@ function LinkedInIcon({ size = 20 }: { size?: number }) {
   )
 }
 
-const contactItems = [
-  {
-    icon:    Mail,
-    label:   'Email',
-    value:   'uzairasim2001@outlook.com',
-    href:    'mailto:uzairasim2001@outlook.com',
-    color:   'hover:border-orange-300 hover:shadow-orange-100',
-    iconBg:  'bg-orange-50 text-[var(--color-clay-orange)]',
+function GitHubIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+    </svg>
+  )
+}
+
+/**
+ * WHY card styles are defined here not in DB:
+ * Same pattern as Skills and Projects — Tailwind classes
+ * are presentational decisions, not data. The card layout
+ * and colors are part of the design system, not the content.
+ */
+const CARD_STYLES = {
+  email: {
+    color:  'hover:border-orange-300 hover:shadow-orange-100',
+    iconBg: 'bg-orange-50 text-[var(--color-clay-orange)]',
   },
-  {
-    icon:    Phone,
-    label:   'Phone',
-    value:   '+92-336-508-2595',
-    href:    'tel:+923365082595',
-    color:   'hover:border-green-300 hover:shadow-green-100',
-    iconBg:  'bg-green-50 text-green-600',
+  phone: {
+    color:  'hover:border-green-300 hover:shadow-green-100',
+    iconBg: 'bg-green-50 text-green-600',
   },
-  {
-    icon:    LinkedInIcon,
-    label:   'LinkedIn',
-    value:   'Connect with me',
-    href:    'https://linkedin.com/in/YOUR-LINKEDIN',
-    color:   'hover:border-blue-300 hover:shadow-blue-100',
-    iconBg:  'bg-blue-50 text-blue-600',
+  linkedin: {
+    color:  'hover:border-blue-300 hover:shadow-blue-100',
+    iconBg: 'bg-blue-50 text-blue-600',
   },
-  {
-    icon:    MapPin,
-    label:   'Location',
-    value:   'Islamabad, Pakistan',
-    href:    'https://maps.google.com/?q=Islamabad,Pakistan',
-    color:   'hover:border-purple-300 hover:shadow-purple-100',
-    iconBg:  'bg-purple-50 text-purple-600',
+  location: {
+    color:  'hover:border-purple-300 hover:shadow-purple-100',
+    iconBg: 'bg-purple-50 text-purple-600',
   },
-]
+}
 
 const cardVariants = {
   hidden:  { opacity: 0, y: 24 },
@@ -61,7 +66,56 @@ const cardVariants = {
   },
 }
 
-export default function Contact() {
+export default function Contact({ contact }: { contact: IContact | null }) {
+  /**
+   * WHY derive contact items from the prop:
+   * We build the contactItems array dynamically from the DB data.
+   * This means adding a new contact method in the admin panel
+   * automatically appears here without touching this file.
+   *
+   * WHY fallback values:
+   * If contact is null (DB unreachable) the section still
+   * renders with empty strings rather than crashing.
+   * The href fallback '#' means links go nowhere gracefully.
+   */
+  const email    = contact?.email    ?? ''
+  const phone    = contact?.phone    ?? ''
+  const linkedin = contact?.linkedin ?? '#'
+  const location = contact?.location ?? ''
+
+  const contactItems = [
+    {
+      icon:   Mail,
+      label:  'Email',
+      value:  email,
+      href:   email ? `mailto:${email}` : '#',
+      ...CARD_STYLES.email,
+    },
+    {
+      icon:   Phone,
+      label:  'Phone',
+      value:  phone,
+      href:   phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '#',
+      ...CARD_STYLES.phone,
+    },
+    {
+      icon:   LinkedInIcon,
+      label:  'LinkedIn',
+      value:  'Connect with me',
+      href:   linkedin,
+      ...CARD_STYLES.linkedin,
+    },
+    {
+      icon:   MapPin,
+      label:  'Location',
+      value:  location,
+      href:   location
+        ? `https://maps.google.com/?q=${encodeURIComponent(location)}`
+        : '#',
+      ...CARD_STYLES.location,
+    },
+  ]
+
   return (
     <section
       id="contact"
@@ -101,10 +155,10 @@ export default function Contact() {
           </p>
         </motion.div>
 
-        {/* Two column layout,  contact cards left, CTA right */}
+        {/* Two column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-          {/* LEFT,  Contact cards */}
+          {/* LEFT — Contact cards */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -133,7 +187,6 @@ export default function Contact() {
                     group
                   `}
                 >
-                  {/* Icon */}
                   <div className={`
                     w-11 h-11 rounded-xl
                     flex items-center justify-center
@@ -143,7 +196,6 @@ export default function Contact() {
                     <Icon size={20} />
                   </div>
 
-                  {/* Text */}
                   <div className="min-w-0">
                     <p className="
                       font-mono text-xs font-bold uppercase
@@ -156,11 +208,10 @@ export default function Contact() {
                       text-sm font-bold text-[var(--color-clay-navy)]
                       truncate
                     ">
-                      {item.value}
+                      {item.value || '—'}
                     </p>
                   </div>
 
-                  {/* Arrow icon,  appears on hover */}
                   <ArrowRight
                     size={16}
                     className="
@@ -176,7 +227,7 @@ export default function Contact() {
             })}
           </motion.div>
 
-          {/* RIGHT,  CTA card */}
+          {/* RIGHT — CTA card */}
           <motion.div
             initial={{ opacity: 0, x: 32 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -189,13 +240,6 @@ export default function Contact() {
               text-white
             "
           >
-            {/**
-             * WHY decorative blobs inside the dark card:
-             * The navy card would look flat without them.
-             * Subtle orange blobs echo the portfolio's accent color
-             * and add depth to an otherwise solid background.
-             * pointer-events-none so they never block the text.
-             */}
             <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="
                 absolute -top-10 -right-10
@@ -210,15 +254,13 @@ export default function Contact() {
             </div>
 
             <div className="relative">
-              {/* Status badge */}
               <div className="
                 inline-flex items-center gap-2
                 bg-white/10 rounded-full
                 px-4 py-2 mb-6
               ">
                 <span className="
-                  w-2 h-2 rounded-full
-                  bg-green-400
+                  w-2 h-2 rounded-full bg-green-400
                   animate-[blink_2s_infinite]
                 " />
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-green-400">
@@ -234,33 +276,55 @@ export default function Contact() {
 
               <p className="text-white/70 font-semibold leading-relaxed mb-8">
                 Whether it's a full-time role, a freelance project, or just
-                a conversation about tech,  I'm always open to connecting
+                a conversation about tech — I'm always open to connecting
                 with the right people.
               </p>
 
-              {/* Email CTA */}
-              <a
-                href="mailto:uzairasim2001@outlook.com"
-                className="
-                  inline-flex items-center gap-3
-                  bg-[var(--color-clay-orange)]
-                  hover:bg-[var(--color-clay-orange-dark)]
-                  text-white font-bold
-                  px-6 py-3 rounded-full
-                  transition-all duration-200
-                  hover:scale-105
-                  shadow-lg shadow-orange-900/30
-                "
-              >
-                <Mail size={18} />
-                Send me an email
-                <ArrowRight size={16} />
-              </a>
+              {/* Email CTA — driven by DB */}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="
+                    inline-flex items-center gap-3
+                    bg-[var(--color-clay-orange)]
+                    hover:bg-[var(--color-clay-orange-dark)]
+                    text-white font-bold
+                    px-6 py-3 rounded-full
+                    transition-all duration-200
+                    hover:scale-105
+                    shadow-lg shadow-orange-900/30
+                  "
+                >
+                  <Mail size={18} />
+                  Send me an email
+                  <ArrowRight size={16} />
+                </a>
+              )}
+
+              {/* GitHub link — driven by DB */}
+              {contact?.github && contact.github !== '#' && (
+                <a
+                  href={contact.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                    inline-flex items-center gap-3
+                    bg-white/10 hover:bg-white/20
+                    text-white font-bold
+                    px-6 py-3 rounded-full
+                    transition-all duration-200
+                    ml-3
+                  "
+                >
+                  <GitHubIcon size={18} />
+                  GitHub
+                </a>
+              )}
             </div>
           </motion.div>
         </div>
 
-        {/* Footer note */}
+        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -275,10 +339,10 @@ export default function Contact() {
           "
         >
           <p className="font-mono text-xs text-[var(--color-clay-muted)] font-bold">
-            © 2025 Uzair Asim. Built with Next.js & ☕
+            © {new Date().getFullYear()} {contact?.email?.split('@')[0] ?? 'Portfolio'}. Built with Next.js & ☕
           </p>
           <p className="font-mono text-xs text-[var(--color-clay-muted)] font-bold">
-            Islamabad, Pakistan 🇵🇰
+            {location} 🇵🇰
           </p>
         </motion.div>
       </div>

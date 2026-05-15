@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import { MapPin, Mail, ExternalLink } from 'lucide-react'
+import type { IHero } from '@/models/Portfolio'
 
 const Spline = dynamic(() => import('@splinetool/react-spline'), {
   ssr: false,
@@ -35,13 +36,20 @@ const itemVariants = {
   },
 }
 
-const stats = [
+/**
+ * WHY fallback stats:
+ * If the database is unreachable or hero is null,
+ * we still show something meaningful rather than
+ * an empty stats row. These match your seed data
+ * so in practice the fallback is never visible.
+ */
+const FALLBACK_STATS = [
   { number: '3+',  label: 'Years Exp'   },
   { number: '80%', label: 'Efficiency↑' },
   { number: '40%', label: 'DB Gain'     },
 ]
 
-export default function Hero() {
+export default function Hero({ hero }: { hero: IHero | null }) {
   const splineRef       = useRef<any>(null)
   const animFrameRef    = useRef<number>(0)
   const lastFrameRef    = useRef<number>(0)
@@ -53,22 +61,17 @@ export default function Hero() {
   const [isSplineLoaded, setIsSplineLoaded] = useState(false)
 
   /**
-   * WHY delayed unmount:
-   * When hover ends we want to:
-   * 1. Immediately fade the image back in (CSS transition)
-   * 2. Wait for the fade to finish (350ms)
-   * 3. THEN fully unmount Spline from the DOM
-   *
-   * This gives the user a smooth visual transition while
-   * still completely freeing the GPU after hover ends.
-   * No more background WebGL rendering draining resources.
-   *
-   * WHY clear the timer on hover-in:
-   * If the user quickly moves out then back in, we cancel
-   * the pending unmount so Spline stays mounted and ready.
-   * This prevents a flicker where Spline unmounts and
-   * immediately needs to remount again.
+   * WHY derive these from props with fallbacks:
+   * If hero is null (DB unreachable) the page still renders
+   * with sensible defaults instead of crashing or showing
+   * empty strings. Always code defensively around DB calls.
    */
+  const stats    = hero?.stats    ?? FALLBACK_STATS
+  const title    = hero?.title    ?? 'Full-Stack Engineer — .NET · Azure · React'
+  const location = hero?.location ?? 'Islamabad, Pakistan'
+  const desc     = hero?.description ?? 'Full-Stack Developer based in Islamabad, Pakistan.'
+  const available = hero?.available ?? true
+
   function handleMouseEnter() {
     isHoveredRef.current = true
     if (unmountTimerRef.current) {
@@ -82,26 +85,11 @@ export default function Hero() {
   function handleMouseLeave() {
     isHoveredRef.current = false
     setIsHovered(false)
-
-    // Wait for fade animation to finish, then fully unmount Spline
     unmountTimerRef.current = setTimeout(() => {
       setSplineMounted(false)
-      /**
-       * WHY also clear splineRef:
-       * Once unmounted the Spline app object is invalid.
-       * Clearing the ref prevents the animation loop from
-       * trying to call methods on a destroyed scene.
-       */
       splineRef.current = null
       setIsSplineLoaded(false)
     }, 400)
-    /**
-     * WHY 400ms:
-     * Our CSS fade transition is 350ms. 400ms gives it
-     * a tiny buffer to fully complete before we remove
-     * the element from the DOM. If we unmount too early
-     * the fade gets cut off and looks like a glitch.
-     */
   }
 
   function onSplineLoad(splineApp: any) {
@@ -162,7 +150,6 @@ export default function Hero() {
     return () => cleanup?.()
   }, [isHovered, isSplineLoaded, startTracking])
 
-  // Cleanup timer on component unmount
   useEffect(() => {
     return () => {
       if (unmountTimerRef.current) clearTimeout(unmountTimerRef.current)
@@ -175,7 +162,6 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center overflow-hidden pt-20"
     >
-      {/* Background decorative circles */}
       <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[var(--color-clay-orange)] opacity-[0.06] blur-3xl" />
         <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-[var(--color-clay-navy)] opacity-[0.04] blur-3xl" />
@@ -195,6 +181,7 @@ export default function Hero() {
           animate="visible"
           className="flex flex-col gap-6"
         >
+          {/* Available badge — driven by DB */}
           <motion.div variants={itemVariants}>
             <span className="
               inline-flex items-center gap-2
@@ -202,11 +189,16 @@ export default function Hero() {
               text-sm font-bold text-[var(--color-clay-orange)]
               shadow-md shadow-orange-100
             ">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-clay-orange)] animate-[blink_2s_infinite]" />
-              Available for hire
+              <span className="
+                w-2 h-2 rounded-full
+                bg-[var(--color-clay-orange)]
+                animate-[blink_2s_infinite]
+              " />
+              {available ? 'Available for hire' : 'Open to opportunities'}
             </span>
           </motion.div>
 
+          {/* Name — kept hardcoded intentionally */}
           <motion.div variants={itemVariants}>
             <h1 className="
               text-5xl md:text-6xl lg:text-7xl
@@ -215,31 +207,32 @@ export default function Hero() {
             ">
               Hi, my<br />
               name is{' '}
-              <span className="text-[var(--color-clay-orange)]">Uzair.</span>
+              <span className="text-[var(--color-clay-orange)]">
+                {hero?.name ?? 'Uzair'}.
+              </span>
             </h1>
           </motion.div>
 
+          {/* Title + location — driven by DB */}
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
             <p className="text-xl font-bold text-[var(--color-clay-muted)]">
-              Full Stack Engineer .NET · Azure · React
+              {title}
             </p>
             <div className="flex items-center gap-1.5 text-sm text-[var(--color-clay-muted)]">
               <MapPin size={14} />
-              <span>Islamabad, Pakistan</span>
+              <span>{location}</span>
             </div>
           </motion.div>
 
+          {/* Description — driven by DB */}
           <motion.p
             variants={itemVariants}
             className="text-base leading-relaxed text-[var(--color-clay-muted)] max-w-md"
           >
-            I build scalable full-stack applications with .NET and Azure,
-            and craft intuitive user experiences with modern JS frameworks.
-            Currently at{' '}
-            <span className="font-bold text-[var(--color-clay-navy)]">XtremeLabs LLC</span>
-            , automating cloud infrastructure and shipping AI-powered tools.
+            {desc}
           </motion.p>
 
+          {/* CTA buttons — static, no need for DB */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
             <Button
               size="lg"
@@ -258,6 +251,7 @@ export default function Hero() {
             </Button>
           </motion.div>
 
+          {/* Stats — driven by DB */}
           <motion.div variants={itemVariants} className="flex gap-4 pt-2">
             {stats.map((stat) => (
               <div
@@ -279,7 +273,7 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* RIGHT: Scene container */}
+        {/* RIGHT: Scene container — completely untouched */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -288,7 +282,6 @@ export default function Hero() {
           onMouseLeave={handleMouseLeave}
           className="relative h-[480px] lg:h-[600px] w-full rounded-3xl"
         >
-          {/* LAYER 1 — Static PNG — always in DOM */}
           <motion.div
             animate={{ opacity: isHovered && isSplineLoaded ? 0 : 1 }}
             transition={{ duration: 0.35, ease: 'easeInOut' }}
@@ -300,12 +293,11 @@ export default function Hero() {
           >
             <Image
               src="/images/desk-scene.png"
-              alt="Uzair's 3D desk setup"
+              alt="3D desk setup"
               fill
               className="object-cover object-center scale-121"
               priority
             />
-            {/* Always-visible hover hint */}
             <div className="
               absolute inset-0 flex items-end
               justify-center pb-6 pointer-events-none
@@ -321,12 +313,6 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/**
-           * LAYER 2 — Spline
-           * Only mounted while hovered (or fading out).
-           * Fully removed from DOM after 400ms delay.
-           * GPU is completely free when not hovered.
-           */}
           {splineMounted && (
             <motion.div
               animate={{ opacity: isHovered && isSplineLoaded ? 1 : 0 }}
@@ -351,7 +337,6 @@ export default function Hero() {
             </motion.div>
           )}
 
-          {/* Gradient — always on top */}
           <div className="
             absolute bottom-0 left-0 right-0 h-24
             bg-gradient-to-t from-[var(--color-cream-100)] to-transparent

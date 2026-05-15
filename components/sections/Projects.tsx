@@ -5,115 +5,56 @@ import { useRef } from 'react'
 import { ExternalLink, GitBranch, Star } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
-
-const projects = [
-  {
-    title:       'Picture Pulse',
-    emoji:       '📌',
-    description: 'A social networking web app for sharing and organizing images — think Pinterest reimagined with smart recommendations.',
-    tech:        ['ReactJS', 'Node.js', 'Google OAuth', 'MongoDB'],
-    features: [
-      'Google OAuth for secure authentication',
-      'Search & filtering for content discoverability',
-      'Recommendation system for similar pin suggestions',
-    ],
-    liveUrl:  '#',
-    githubUrl: '#',
-    featured:  true,
-    gradient: 'from-orange-100 via-amber-50 to-yellow-50',
-  },
-  {
-    title:       'PRIME',
-    emoji:       '🛒',
-    description: 'A full-featured eCommerce platform enabling store customization, product management, and secure payments.',
-    tech:        ['MongoDB', 'Express', 'React', 'Node.js', 'Stripe'],
-    features: [
-      'Encryption-based auth with secure token management',
-      'Store customization with products, text & image support',
-      'Stripe integration for seamless payment processing',
-      'Responsive UI with advanced search & filtering',
-    ],
-    liveUrl:   '#',
-    githubUrl: '#',
-    featured:  true,
-    gradient:  'from-blue-50 via-indigo-50 to-purple-50',
-  },
-]
+import type { IProject } from '@/models/Portfolio'
 
 /**
- * WHY a separate TiltCard component:
- * The 3D tilt logic (mouse tracking, spring physics, transforms)
- * is complex enough to deserve its own component.
- * If we put it inline in the map() it would be hard to read
- * and impossible to reuse elsewhere.
- *
- * This is the single responsibility principle — each component
- * does one thing well.
+ * WHY gradient is derived here not stored in DB:
+ * Same reasoning as Skills — Tailwind classes are
+ * presentational, not data. We cycle through a palette
+ * based on the project's order index so each card
+ * automatically gets a distinct color without storing
+ * CSS in the database.
  */
-function TiltCard({ project, index }: {
-  project: typeof projects[0]
-  index: number
-}) {
-  const ref = useRef<HTMLDivElement>(null)
+const PROJECT_GRADIENTS = [
+  'from-orange-100 via-amber-50 to-yellow-50',
+  'from-blue-50 via-indigo-50 to-purple-50',
+  'from-green-50 via-emerald-50 to-teal-50',
+  'from-rose-50 via-pink-50 to-fuchsia-50',
+  'from-sky-50 via-cyan-50 to-blue-50',
+  'from-violet-50 via-purple-50 to-indigo-50',
+]
 
-  /**
-   * WHY useMotionValue:
-   * Like useState but for animation values. The difference is
-   * that updating a MotionValue does NOT cause a React re-render.
-   * This is critical for performance — mouse move fires 60+ times
-   * per second and we can't re-render the whole component each time.
-   * MotionValue updates go directly to the DOM via Framer Motion.
-   */
+function TiltCard({ project, index }: {
+  project: IProject
+  index:   number
+}) {
+  const ref    = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  /**
-   * WHY useSpring:
-   * Spring physics makes the tilt feel physical and natural.
-   * Without spring the card snaps instantly to follow the mouse.
-   * With spring it lags slightly behind like a real physical object
-   * with mass and momentum.
-   *
-   * stiffness: how quickly it reaches the target (higher = faster)
-   * damping: how much it oscillates before settling (higher = less bounce)
-   */
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 })
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 })
+  const springX  = useSpring(mouseX, { stiffness: 300, damping: 30 })
+  const springY  = useSpring(mouseY, { stiffness: 300, damping: 30 })
+  const rotateY  = useTransform(springX, [-0.5, 0.5], [-8,  8])
+  const rotateX  = useTransform(springY, [-0.5, 0.5], [ 8, -8])
 
   /**
-   * WHY useTransform:
-   * Converts the raw mouse position values into rotation degrees.
-   * [-0.5, 0.5] input range maps to [-8, 8] degree output range.
-   * So moving the mouse from left to right rotates the card
-   * from -8 degrees to +8 degrees.
-   * Note X mouse movement controls Y rotation and vice versa —
-   * that's how 3D perspective works.
+   * WHY index % PROJECT_GRADIENTS.length:
+   * Cycles through the gradient palette regardless of how
+   * many projects exist. Project 0 gets gradient 0,
+   * project 6 wraps back to gradient 0, etc.
+   * Adding a 7th project in the admin panel automatically
+   * gets a color — no code change needed.
    */
-  const rotateY = useTransform(springX, [-0.5, 0.5], [-8, 8])
-  const rotateX = useTransform(springY, [-0.5, 0.5], [8, -8])
+  const gradient = PROJECT_GRADIENTS[index % PROJECT_GRADIENTS.length]
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!ref.current) return
     const rect = ref.current.getBoundingClientRect()
-
-    /**
-     * WHY normalize to -0.5 to 0.5:
-     * We calculate where the mouse is within the card as a
-     * fraction. 0 = left/top edge, 1 = right/bottom edge.
-     * Subtracting 0.5 centers it so 0 = middle of card.
-     * This means the card tilts toward the mouse position
-     * relative to the card center, not the page.
-     */
     mouseX.set((e.clientX - rect.left) / rect.width  - 0.5)
     mouseY.set((e.clientY - rect.top)  / rect.height - 0.5)
   }
 
   function handleMouseLeave() {
-    /**
-     * WHY set back to 0:
-     * When the mouse leaves we reset to flat (no tilt).
-     * The spring physics handles the smooth transition back.
-     */
     mouseX.set(0)
     mouseY.set(0)
   }
@@ -124,40 +65,25 @@ function TiltCard({ project, index }: {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' as const }}
-      /**
-       * WHY perspective style on the outer div:
-       * CSS perspective defines the "camera distance" from the card.
-       * Lower values = more dramatic tilt effect.
-       * Higher values = subtler tilt.
-       * 1000px is a good balance for a card this size.
-       * Perspective must be on the PARENT of the element being
-       * transformed — not on the element itself.
-       */
       style={{ perspective: 1000 }}
     >
       <motion.div
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: 'preserve-3d',
-        }}
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         className="
           relative rounded-2xl overflow-hidden
           border border-[var(--color-cream-300)]
           hover:border-[var(--color-clay-orange)]/40
           hover:shadow-2xl hover:shadow-orange-100/60
           transition-shadow duration-300
-          cursor-default
-          h-full
+          cursor-default h-full
         "
       >
-        {/* Card gradient background */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-60`} />
+        {/* Card gradient */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-60`} />
 
-        {/* Card content */}
         <div className="relative p-7 flex flex-col h-full">
 
           {/* Header */}
@@ -179,7 +105,7 @@ function TiltCard({ project, index }: {
               </div>
             </div>
 
-            {/* Links */}
+            {/* Links — only shown if URL is not placeholder */}
             <div className="flex gap-2">
               {project.githubUrl !== '#' && (
                 <a
@@ -187,8 +113,7 @@ function TiltCard({ project, index }: {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
-                    p-2 rounded-lg
-                    bg-white/70 hover:bg-white
+                    p-2 rounded-lg bg-white/70 hover:bg-white
                     text-[var(--color-clay-navy)]
                     transition-colors duration-200
                   "
@@ -202,8 +127,7 @@ function TiltCard({ project, index }: {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
-                    p-2 rounded-lg
-                    bg-white/70 hover:bg-white
+                    p-2 rounded-lg bg-white/70 hover:bg-white
                     text-[var(--color-clay-orange)]
                     transition-colors duration-200
                   "
@@ -215,11 +139,7 @@ function TiltCard({ project, index }: {
           </div>
 
           {/* Description */}
-          <p className="
-            text-sm leading-relaxed font-semibold
-            text-[var(--color-clay-muted)]
-            mb-5
-          ">
+          <p className="text-sm leading-relaxed font-semibold text-[var(--color-clay-muted)] mb-5">
             {project.description}
           </p>
 
@@ -252,7 +172,7 @@ function TiltCard({ project, index }: {
   )
 }
 
-export default function Projects() {
+export default function Projects({ projects, githubUrl }: { projects: IProject[]; githubUrl: string }) {
   return (
     <section
       id="projects"
@@ -294,12 +214,14 @@ export default function Projects() {
 
         {/* Projects grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {projects.map((project, index) => (
-            <TiltCard key={project.title} project={project} index={index} />
-          ))}
+          {[...projects]
+            .sort((a, b) => a.order - b.order)
+            .map((project, index) => (
+              <TiltCard key={project.title} project={project} index={index} />
+            ))}
         </div>
 
-        {/* More projects note */}
+        {/* GitHub CTA */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -313,7 +235,7 @@ export default function Projects() {
           <Button
             variant="outline"
             size="md"
-            onClick={() => window.open('https://github.com/YOUR-USERNAME', '_blank')}
+            onClick={() => window.open(githubUrl, '_blank')}
           >
             <GitBranch size={16} className="mr-2" />
             View GitHub Profile

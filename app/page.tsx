@@ -1,28 +1,15 @@
-/**
- * WHY no 'use client' here: This is a Server Component.
- * It renders on the server and sends complete HTML to the browser.
- * Each section component handles its own client/server decision.
- *
- * WHY import each section separately: Separation of concerns.
- * Each section is self-contained. If Skills breaks, Hero still works.
- * It also makes the code readable — you can see the page structure
- * at a glance just by reading this file.
- */
-
 import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/sections/Hero'
+import { getPortfolioData } from '@/lib/data'
 
 /**
- * WHY dynamic import for sections below the fold:
- * The user can't see Skills, Experience, Projects, or Contact
- * on page load — they require scrolling to reach.
- * Loading them lazily means the browser focuses all resources
- * on the Hero section first (the most important part).
- * Each section loads only when the user is about to scroll to it.
- * This is called "below the fold lazy loading" and it's one of
- * the most impactful performance techniques for long pages.
+ * WHY async:
+ * Server components can be async — they await data before
+ * rendering. The client never sees this await, only the
+ * finished HTML with data already in it.
  */
+
 const Skills = dynamic(() => import('@/components/sections/Skills'), {
   loading: () => <div className="py-24" />,
 })
@@ -39,15 +26,20 @@ const Contact = dynamic(() => import('@/components/sections/Contact'), {
   loading: () => <div className="py-24" />,
 })
 
-export default function Home() {
+export default async function Home() {
+  const portfolio = await getPortfolioData()
+
   return (
     <main className="min-h-screen bg-[var(--color-cream-100)]">
       <Navbar />
-      <Hero />
-      <Skills />
-      <Experience />
-      <Projects />
-      <Contact />
+      <Hero      hero={portfolio?.hero           ?? null} />
+      <Skills    skills={portfolio?.skills       ?? []}   />
+      <Experience experience={portfolio?.experience ?? []} />
+      <Projects
+        projects={portfolio?.projects ?? []}
+        githubUrl={portfolio?.contact?.github ?? '#'}
+      />
+      <Contact contact={portfolio?.contact ?? null} />
     </main>
   )
 }

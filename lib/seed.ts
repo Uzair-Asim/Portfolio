@@ -163,6 +163,14 @@ const seedData = {
     { icon: '📊', text: 'Created bar and doughnut charts to visualize business analytics and drive data-informed decisions.' },
     { icon: '🏅', text: 'Silver Medalist & Distinction Certificate Awardee at International Islamic University, Islamabad.' },
   ],
+  contact: {
+      email:    'uzairasim2001@outlook.com',
+      phone:    '+92-336-508-2595',
+      linkedin: 'https://www.linkedin.com/in/uzair-asim-8a2833235/',
+      github:   'https://github.com/Uzair-Asim',
+      website:  '',
+      location: 'Islamabad, Pakistan',
+    },
 }
 
 async function seed() {
