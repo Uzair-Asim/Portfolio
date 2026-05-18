@@ -1,7 +1,4 @@
-export async function GET() {
-  return Response.json({ message: 'Auth API — coming in Phase 4' })
-}
+import { handlers } from '@/lib/auth'
 
-export async function POST() {
-  return Response.json({ message: 'Auth API — coming in Phase 4' })
-}
+export const { GET, POST } = handlers
+export const runtime = 'nodejs'
