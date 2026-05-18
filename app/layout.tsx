@@ -30,8 +30,8 @@ const spaceMono = Space_Mono({
  * shows up in Google results and LinkedIn/WhatsApp previews.
  */
 export const metadata: Metadata = {
-  title: 'Uzair Asim — Full-Stack Engineer',
-  description: 'Full-Stack Developer specializing in .NET, Azure, and modern JS frameworks. Based in Islamabad, Pakistan.',
+  title: 'Portfolio Uzair Asim',
+  description: 'Full Stack Developer specializing in .NET, Azure, and modern JS frameworks. Based in Islamabad, Pakistan.',
   keywords: [
     'Uzair Asim',
     'Full Stack Developer',

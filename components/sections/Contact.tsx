@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
+import { Mail, Phone, MapPin, ArrowRight, ExternalLink } from 'lucide-react'
 import type { IContact } from '@/models/Portfolio'
 
 function LinkedInIcon({ size = 20 }: { size?: number }) {
@@ -32,12 +32,6 @@ function GitHubIcon({ size = 20 }: { size?: number }) {
   )
 }
 
-/**
- * WHY card styles are defined here not in DB:
- * Same pattern as Skills and Projects — Tailwind classes
- * are presentational decisions, not data. The card layout
- * and colors are part of the design system, not the content.
- */
 const CARD_STYLES = {
   email: {
     color:  'hover:border-orange-300 hover:shadow-orange-100',
@@ -67,17 +61,6 @@ const cardVariants = {
 }
 
 export default function Contact({ contact }: { contact: IContact | null }) {
-  /**
-   * WHY derive contact items from the prop:
-   * We build the contactItems array dynamically from the DB data.
-   * This means adding a new contact method in the admin panel
-   * automatically appears here without touching this file.
-   *
-   * WHY fallback values:
-   * If contact is null (DB unreachable) the section still
-   * renders with empty strings rather than crashing.
-   * The href fallback '#' means links go nowhere gracefully.
-   */
   const email    = contact?.email    ?? ''
   const phone    = contact?.phone    ?? ''
   const linkedin = contact?.linkedin ?? '#'
@@ -114,6 +97,14 @@ export default function Contact({ contact }: { contact: IContact | null }) {
         : '#',
       ...CARD_STYLES.location,
     },
+    ...(contact?.website ? [{
+      icon:   ExternalLink,
+      label:  'Website',
+      value:  contact.website.replace(/^https?:\/\//, ''),
+      href:   contact.website,
+      color:  'hover:border-amber-300 hover:shadow-amber-100',
+      iconBg: 'bg-amber-50 text-amber-600',
+    }] : []),
   ]
 
   return (
@@ -166,8 +157,24 @@ export default function Contact({ contact }: { contact: IContact | null }) {
             transition={{ staggerChildren: 0.1 }}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
-            {contactItems.map((item) => {
+            {contactItems.map((item, index) => {
               const Icon = item.icon
+
+              /**
+               * WHY isLastOdd:
+               * When the total number of cards is odd, the last
+               * card has no pair and sits half-width, looking
+               * unfinished. We detect this and apply sm:col-span-2
+               * so it stretches across the full row width.
+               * On mobile (grid-cols-1) col-span-2 has no visual
+               * effect since there is only one column — every card
+               * is already full width. Safe to apply unconditionally
+               * at the sm breakpoint only.
+               */
+              const isLastOdd =
+                contactItems.length % 2 !== 0 &&
+                index === contactItems.length - 1
+
               return (
                 <motion.a
                   key={item.label}
@@ -185,6 +192,7 @@ export default function Contact({ contact }: { contact: IContact | null }) {
                     hover:shadow-lg
                     transition-all duration-300
                     group
+                    ${isLastOdd ? 'sm:col-span-2' : ''}
                   `}
                 >
                   <div className={`
@@ -280,46 +288,45 @@ export default function Contact({ contact }: { contact: IContact | null }) {
                 with the right people.
               </p>
 
-              {/* Email CTA — driven by DB */}
-              {email && (
-                <a
-                  href={`mailto:${email}`}
-                  className="
-                    inline-flex items-center gap-3
-                    bg-[var(--color-clay-orange)]
-                    hover:bg-[var(--color-clay-orange-dark)]
-                    text-white font-bold
-                    px-6 py-3 rounded-full
-                    transition-all duration-200
-                    hover:scale-105
-                    shadow-lg shadow-orange-900/30
-                  "
-                >
-                  <Mail size={18} />
-                  Send me an email
-                  <ArrowRight size={16} />
-                </a>
-              )}
+              <div className="flex flex-wrap gap-3">
+                {email && (
+                  <a
+                    href={`mailto:${email}`}
+                    className="
+                      inline-flex items-center gap-3
+                      bg-[var(--color-clay-orange)]
+                      hover:bg-[var(--color-clay-orange-dark)]
+                      text-white font-bold
+                      px-6 py-3 rounded-full
+                      transition-all duration-200
+                      hover:scale-105
+                      shadow-lg shadow-orange-900/30
+                    "
+                  >
+                    <Mail size={18} />
+                    Send me an email
+                    <ArrowRight size={16} />
+                  </a>
+                )}
 
-              {/* GitHub link — driven by DB */}
-              {contact?.github && contact.github !== '#' && (
-                <a
-                  href={contact.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    inline-flex items-center gap-3
-                    bg-white/10 hover:bg-white/20
-                    text-white font-bold
-                    px-6 py-3 rounded-full
-                    transition-all duration-200
-                    ml-3
-                  "
-                >
-                  <GitHubIcon size={18} />
-                  GitHub
-                </a>
-              )}
+                {contact?.github && contact.github !== '#' && (
+                  <a
+                    href={contact.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      inline-flex items-center gap-3
+                      bg-white/10 hover:bg-white/20
+                      text-white font-bold
+                      px-6 py-3 rounded-full
+                      transition-all duration-200
+                    "
+                  >
+                    <GitHubIcon size={18} />
+                    GitHub
+                  </a>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>
