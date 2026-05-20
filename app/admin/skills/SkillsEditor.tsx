@@ -4,9 +4,318 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
-import { ArrowLeft, Save, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 import type { ISkillCategory } from '@/models/Portfolio'
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+/**
+ * WHY useSortable for each draggable item:
+ * @dnd-kit uses a hook-based API. Each draggable element
+ * calls useSortable with a unique ID. The hook returns
+ * transform values and event listeners we apply to the DOM.
+ * The DndContext + SortableContext above handle the
+ * coordination between all draggable items.
+ */
+
+// ── Sortable Category Card ──
+function SortableCategoryCard({
+  category,
+  catIndex,
+  totalCategories,
+  onUpdate,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  onAddSkill,
+  onUpdateSkill,
+  onRemoveSkill,
+  onReorderSkills,
+}: {
+  category:        ISkillCategory
+  catIndex:        number
+  totalCategories: number
+  onUpdate:        (field: keyof ISkillCategory, value: any) => void
+  onRemove:        () => void
+  onMoveUp:        () => void
+  onMoveDown:      () => void
+  onAddSkill:      () => void
+  onUpdateSkill:   (skillIndex: number, value: string) => void
+  onRemoveSkill:   (skillIndex: number) => void
+  onReorderSkills: (oldIndex: number, newIndex: number) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `category-${catIndex}` })
+
+  const style = {
+    transform:  CSS.Transform.toString(transform),
+    transition,
+    /**
+     * WHY zIndex when dragging:
+     * During drag the card needs to appear above other cards.
+     * Without this it renders behind adjacent cards and looks broken.
+     */
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  }
+
+  // Skills use their own DndContext scoped inside each category
+  const skillSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  function handleSkillDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = category.skills.findIndex((_, i) => `skill-${catIndex}-${i}` === active.id)
+    const newIndex = category.skills.findIndex((_, i) => `skill-${catIndex}-${i}` === over.id)
+    if (oldIndex !== -1 && newIndex !== -1) {
+      onReorderSkills(oldIndex, newIndex)
+    }
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`
+        bg-white rounded-2xl
+        border border-[var(--color-cream-300)]
+        overflow-hidden
+        ${isDragging ? 'shadow-xl' : ''}
+        transition-shadow duration-200
+      `}
+    >
+      {/* Category header */}
+      <div className="
+        flex items-center gap-3 p-4
+        border-b border-[var(--color-cream-300)]
+        bg-[var(--color-cream-50)]
+      ">
+        {/**
+         * WHY separate drag handle from arrow controls:
+         * The drag handle (grip icon) initiates free drag-and-drop.
+         * Arrow buttons handle precise keyboard-friendly reordering.
+         * Both controls exist for different user preferences —
+         * mouse users prefer drag, keyboard users prefer arrows.
+         */}
+
+        {/* Drag handle */}
+        <button
+          className="cursor-grab active:cursor-grabbing p-1 rounded text-[var(--color-clay-muted)] hover:text-[var(--color-clay-navy)] touch-none"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical size={16} />
+        </button>
+
+        {/* Arrow controls */}
+        <div className="flex flex-col gap-0.5">
+          <button
+            onClick={onMoveUp}
+            disabled={catIndex === 0}
+            className="p-1 rounded hover:bg-[var(--color-cream-200)] disabled:opacity-30 transition-colors cursor-pointer"
+          >
+            <ChevronUp size={14} className="text-[var(--color-clay-muted)]" />
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={catIndex === totalCategories - 1}
+            className="p-1 rounded hover:bg-[var(--color-cream-200)] disabled:opacity-30 transition-colors cursor-pointer"
+          >
+            <ChevronDown size={14} className="text-[var(--color-clay-muted)]" />
+          </button>
+        </div>
+
+        {/* Icon */}
+        <input
+          type="text"
+          value={category.icon}
+          onChange={e => onUpdate('icon', e.target.value)}
+          className="
+            w-12 text-center text-xl
+            border border-[var(--color-cream-300)]
+            rounded-lg py-1.5
+            bg-white focus:outline-none
+            focus:border-[var(--color-clay-orange)]
+          "
+        />
+
+        {/* Title */}
+        <input
+          type="text"
+          value={category.title}
+          onChange={e => onUpdate('title', e.target.value)}
+          placeholder="Category title"
+          className="
+            flex-1 px-3 py-2 rounded-lg
+            border border-[var(--color-cream-300)]
+            focus:border-[var(--color-clay-orange)]
+            focus:outline-none
+            font-bold text-sm
+            text-[var(--color-clay-navy)]
+            bg-white transition-colors
+          "
+        />
+
+        {/* Skill count */}
+        <span className="
+          font-mono text-xs font-bold
+          bg-[var(--color-cream-200)]
+          text-[var(--color-clay-muted)]
+          px-2.5 py-1 rounded-full whitespace-nowrap
+        ">
+          {category.skills.length} skills
+        </span>
+
+        {/* Delete */}
+        <button
+          onClick={onRemove}
+          className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+
+      {/* Skills — draggable horizontally */}
+      <div className="p-4">
+        <DndContext
+          sensors={skillSensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleSkillDragEnd}
+        >
+          <SortableContext
+            items={category.skills.map((_, i) => `skill-${catIndex}-${i}`)}
+            strategy={horizontalListSortingStrategy}
+          >
+            <div className="flex flex-wrap gap-2">
+              {category.skills.map((skill, skillIndex) => (
+                <SortableSkillChip
+                  key={`skill-${catIndex}-${skillIndex}`}
+                  id={`skill-${catIndex}-${skillIndex}`}
+                  skill={skill}
+                  onUpdate={val => onUpdateSkill(skillIndex, val)}
+                  onRemove={() => onRemoveSkill(skillIndex)}
+                />
+              ))}
+
+              <button
+                onClick={onAddSkill}
+                className="
+                  flex items-center gap-1
+                  px-3 py-1.5 rounded-lg
+                  border border-dashed border-[var(--color-clay-orange)]/40
+                  text-[var(--color-clay-orange)]
+                  font-mono text-xs font-bold
+                  hover:border-[var(--color-clay-orange)]
+                  hover:bg-orange-50
+                  transition-colors cursor-pointer
+                "
+              >
+                <Plus size={12} />
+                Add skill
+              </button>
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+    </div>
+  )
+}
+
+// ── Sortable Skill Chip ──
+function SortableSkillChip({
+  id,
+  skill,
+  onUpdate,
+  onRemove,
+}: {
+  id:       string
+  skill:    string
+  onUpdate: (val: string) => void
+  onRemove: () => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style = {
+    transform:  CSS.Transform.toString(transform),
+    transition,
+    zIndex:  isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.75 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-1 bg-[var(--color-cream-50)] border border-[var(--color-cream-300)] rounded-lg overflow-hidden"
+    >
+      {/* Skill drag handle */}
+      <button
+        className="pl-2 cursor-grab active:cursor-grabbing text-[var(--color-clay-muted)] touch-none"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={12} />
+      </button>
+
+      <input
+        type="text"
+        value={skill}
+        onChange={e => onUpdate(e.target.value)}
+        placeholder="Skill"
+        className="
+          px-2 py-1.5
+          font-semibold text-sm
+          text-[var(--color-clay-navy)]
+          bg-transparent focus:outline-none
+          w-24
+        "
+      />
+      <button
+        onClick={onRemove}
+        className="pr-2 text-red-300 hover:text-red-500 transition-colors cursor-pointer"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+// ── Main Editor ──
 export default function SkillsEditor({
   initialData,
 }: {
@@ -14,16 +323,46 @@ export default function SkillsEditor({
 }) {
   const router = useRouter()
 
-  /**
-   * WHY sort on init:
-   * MongoDB doesn't guarantee array order.
-   * We sort by the order field immediately so the editor
-   * shows categories in the same order as the portfolio.
-   */
   const [categories, setCategories] = useState<ISkillCategory[]>(
     [...initialData].sort((a, b) => a.order - b.order)
   )
   const [saving, setSaving] = useState(false)
+
+  /**
+   * WHY PointerSensor with activation constraint:
+   * Without a distance constraint, clicking inputs inside
+   * draggable cards immediately triggers drag instead of
+   * letting you type. The 8px distance means you have to
+   * actually move the mouse before drag activates.
+   */
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  function handleCategoryDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setCategories(prev => {
+      const oldIndex = prev.findIndex((_, i) => `category-${i}` === active.id)
+      const newIndex = prev.findIndex((_, i) => `category-${i}` === over.id)
+      if (oldIndex === -1 || newIndex === -1) return prev
+
+      /**
+       * WHY arrayMove then reassign order:
+       * arrayMove reorders the array positions correctly.
+       * We then reassign order values 1..n to match the
+       * new positions so the DB reflects the visual order.
+       */
+      const reordered = arrayMove(prev, oldIndex, newIndex)
+      return reordered.map((cat, i) => ({ ...cat, order: i + 1 }))
+    })
+  }
 
   function updateCategory(index: number, field: keyof ISkillCategory, value: any) {
     setCategories(prev =>
@@ -31,12 +370,38 @@ export default function SkillsEditor({
     )
   }
 
+  function removeCategory(index: number) {
+    setCategories(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function moveCategory(index: number, direction: 'up' | 'down') {
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= categories.length) return
+
+    setCategories(prev => {
+      const updated = prev.map(cat => ({ ...cat }))
+      const tempOrder          = updated[index].order
+      updated[index].order     = updated[swapIndex].order
+      updated[swapIndex].order = tempOrder
+      const tempCat            = updated[index]
+      updated[index]           = updated[swapIndex]
+      updated[swapIndex]       = tempCat
+      return updated
+    })
+  }
+
+  function addCategory() {
+    const maxOrder = categories.reduce((max, c) => Math.max(max, c.order), 0)
+    setCategories(prev => [
+      ...prev,
+      { icon: '🔧', title: '', skills: [], order: maxOrder + 1 },
+    ])
+  }
+
   function addSkill(catIndex: number) {
     setCategories(prev =>
       prev.map((cat, i) =>
-        i === catIndex
-          ? { ...cat, skills: [...cat.skills, ''] }
-          : cat
+        i === catIndex ? { ...cat, skills: [...cat.skills, ''] } : cat
       )
     )
   }
@@ -45,10 +410,7 @@ export default function SkillsEditor({
     setCategories(prev =>
       prev.map((cat, i) =>
         i === catIndex
-          ? {
-              ...cat,
-              skills: cat.skills.map((s, si) => si === skillIndex ? value : s),
-            }
+          ? { ...cat, skills: cat.skills.map((s, si) => si === skillIndex ? value : s) }
           : cat
       )
     )
@@ -64,59 +426,22 @@ export default function SkillsEditor({
     )
   }
 
-  function addCategory() {
-    const maxOrder = categories.reduce((max, c) => Math.max(max, c.order), 0)
-    setCategories(prev => [
-      ...prev,
-      { icon: '🔧', title: '', skills: [], order: maxOrder + 1 },
-    ])
-  }
-
-  function removeCategory(index: number) {
-    setCategories(prev => prev.filter((_, i) => i !== index))
-  }
-
-  /**
-   * WHY swap order values not just array positions:
-   * The order field in MongoDB controls rendering order.
-   * Swapping array positions without updating order values
-   * would look right in the editor but revert on next load
-   * when the data is re-sorted by order.
-   * We swap both the positions AND the order values together.
-   */
-  function moveCategory(index: number, direction: 'up' | 'down') {
-    const swapIndex = direction === 'up' ? index - 1 : index + 1
-    if (swapIndex < 0 || swapIndex >= categories.length) return  
-    setCategories(prev => {
-      /**
-       * WHY create a deep copy first:
-       * We need to swap order values between two items AND
-       * swap their positions in the array. Mutating the array
-       * directly causes React to miss the state change.
-       * Spreading each item into a new object ensures
-       * React sees genuinely new references and re-renders.
-       */
-      const updated = prev.map(cat => ({ ...cat }))  
-      // Swap order values
-      const tempOrder          = updated[index].order
-      updated[index].order     = updated[swapIndex].order
-      updated[swapIndex].order = tempOrder  
-      // Swap array positions
-      const tempCat        = updated[index]
-      updated[index]       = updated[swapIndex]
-      updated[swapIndex]   = tempCat  
-      return updated
-    })
+  function reorderSkills(catIndex: number, oldIndex: number, newIndex: number) {
+    setCategories(prev =>
+      prev.map((cat, i) =>
+        i === catIndex
+          ? { ...cat, skills: arrayMove(cat.skills, oldIndex, newIndex) }
+          : cat
+      )
+    )
   }
 
   async function handleSave() {
-    // Validate — no empty titles
     const hasEmptyTitle = categories.some(c => !c.title.trim())
     if (hasEmptyTitle) {
       toast.error('All categories must have a title.')
       return
     }
-
     setSaving(true)
     try {
       const res = await fetch('/api/content', {
@@ -165,7 +490,7 @@ export default function SkillsEditor({
             ⚙️ Skills & Stack
           </h1>
           <p className="text-sm font-semibold text-[var(--color-clay-muted)]">
-            Manage your skill categories and individual skills.
+            Drag categories or skills to reorder. Use arrows for precise control.
           </p>
         </div>
         <button
@@ -184,195 +509,73 @@ export default function SkillsEditor({
         </button>
       </div>
 
-      <div className="flex flex-col gap-5">
-        {categories.map((category, catIndex) => (
-          <div
-            key={catIndex}
-            className="
-              bg-white rounded-2xl
-              border border-[var(--color-cream-300)]
-              overflow-hidden
-            "
-          >
-            {/* Category header */}
-            <div className="
-              flex items-center gap-3 p-4
-              border-b border-[var(--color-cream-300)]
-              bg-[var(--color-cream-50)]
-            ">
-              {/* Order controls */}
-              <div className="flex flex-col gap-0.5">
-                <button
-                  onClick={() => moveCategory(catIndex, 'up')}
-                  disabled={catIndex === 0}
-                  className="p-1 rounded hover:bg-[var(--color-cream-200)] disabled:opacity-30 transition-colors cursor-pointer"
-                >
-                  <ChevronUp size={14} className="text-[var(--color-clay-muted)]" />
-                </button>
-                <button
-                  onClick={() => moveCategory(catIndex, 'down')}
-                  disabled={catIndex === categories.length - 1}
-                  className="p-1 rounded hover:bg-[var(--color-cream-200)] disabled:opacity-30 transition-colors cursor-pointer"
-                >
-                  <ChevronDown size={14} className="text-[var(--color-clay-muted)]" />
-                </button>
-              </div>
-
-              {/* Icon input */}
-              <input
-                type="text"
-                value={category.icon}
-                onChange={e => updateCategory(catIndex, 'icon', e.target.value)}
-                className="
-                  w-12 text-center text-xl
-                  border border-[var(--color-cream-300)]
-                  rounded-lg py-1.5
-                  bg-white focus:outline-none
-                  focus:border-[var(--color-clay-orange)]
-                "
+      {/* Categories — draggable */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleCategoryDragEnd}
+      >
+        <SortableContext
+          items={categories.map((_, i) => `category-${i}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="flex flex-col gap-5">
+            {categories.map((category, catIndex) => (
+              <SortableCategoryCard
+                key={`category-${catIndex}`}
+                category={category}
+                catIndex={catIndex}
+                totalCategories={categories.length}
+                onUpdate={(field, value) => updateCategory(catIndex, field, value)}
+                onRemove={() => removeCategory(catIndex)}
+                onMoveUp={() => moveCategory(catIndex, 'up')}
+                onMoveDown={() => moveCategory(catIndex, 'down')}
+                onAddSkill={() => addSkill(catIndex)}
+                onUpdateSkill={(si, val) => updateSkill(catIndex, si, val)}
+                onRemoveSkill={si => removeSkill(catIndex, si)}
+                onReorderSkills={(oi, ni) => reorderSkills(catIndex, oi, ni)}
               />
+            ))}
 
-              {/* Title input */}
-              <input
-                type="text"
-                value={category.title}
-                onChange={e => updateCategory(catIndex, 'title', e.target.value)}
-                placeholder="Category title"
-                className="
-                  flex-1 px-3 py-2 rounded-lg
-                  border border-[var(--color-cream-300)]
-                  focus:border-[var(--color-clay-orange)]
-                  focus:outline-none
-                  font-bold text-sm
-                  text-[var(--color-clay-navy)]
-                  bg-white transition-colors
-                "
-              />
-
-              {/* Skill count badge */}
-              <span className="
-                font-mono text-xs font-bold
-                bg-[var(--color-cream-200)]
-                text-[var(--color-clay-muted)]
-                px-2.5 py-1 rounded-full
-                whitespace-nowrap
+            {categories.length === 0 && (
+              <div className="
+                text-center py-16 bg-white rounded-2xl
+                border border-dashed border-[var(--color-cream-300)]
               ">
-                {category.skills.length} skills
-              </span>
-
-              {/* Delete category */}
-              <button
-                onClick={() => removeCategory(catIndex)}
-                className="
-                  p-2 rounded-lg
-                  text-red-400 hover:text-red-600
-                  hover:bg-red-50
-                  transition-colors cursor-pointer
-                "
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-
-            {/* Skills list */}
-            <div className="p-4 flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
-                {category.skills.map((skill, skillIndex) => (
-                  <div
-                    key={skillIndex}
-                    className="flex items-center gap-1 bg-[var(--color-cream-50)] border border-[var(--color-cream-300)] rounded-lg overflow-hidden"
-                  >
-                    <input
-                      type="text"
-                      value={skill}
-                      onChange={e => updateSkill(catIndex, skillIndex, e.target.value)}
-                      placeholder="Skill name"
-                      className="
-                        px-3 py-1.5
-                        font-semibold text-sm
-                        text-[var(--color-clay-navy)]
-                        bg-transparent
-                        focus:outline-none
-                        w-28
-                      "
-                    />
-                    <button
-                      onClick={() => removeSkill(catIndex, skillIndex)}
-                      className="
-                        pr-2 text-red-300
-                        hover:text-red-500
-                        transition-colors cursor-pointer
-                      "
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-
-                {/* Add skill button */}
+                <p className="font-semibold text-[var(--color-clay-muted)] mb-3">
+                  No skill categories yet.
+                </p>
                 <button
-                  onClick={() => addSkill(catIndex)}
-                  className="
-                    flex items-center gap-1
-                    px-3 py-1.5 rounded-lg
-                    border border-dashed border-[var(--color-clay-orange)]/40
-                    text-[var(--color-clay-orange)]
-                    font-mono text-xs font-bold
-                    hover:border-[var(--color-clay-orange)]
-                    hover:bg-orange-50
-                    transition-colors cursor-pointer
-                  "
+                  onClick={addCategory}
+                  className="font-mono text-xs font-bold text-[var(--color-clay-orange)] hover:underline cursor-pointer"
                 >
-                  <Plus size={12} />
-                  Add skill
+                  Add your first category →
                 </button>
               </div>
-            </div>
+            )}
           </div>
-        ))}
+        </SortableContext>
+      </DndContext>
 
-        {categories.length === 0 && (
-          <div className="
-            text-center py-16
-            bg-white rounded-2xl
-            border border-dashed border-[var(--color-cream-300)]
-          ">
-            <p className="font-semibold text-[var(--color-clay-muted)] mb-3">
-              No skill categories yet.
-            </p>
-            <button
-              onClick={addCategory}
-              className="
-                font-mono text-xs font-bold
-                text-[var(--color-clay-orange)]
-                hover:underline cursor-pointer
-              "
-            >
-              Add your first category →
-            </button>
-          </div>
-        )}
-
-        {/* Save button */}
-        <div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="
-              flex items-center gap-2
-              bg-[var(--color-clay-orange)]
-              hover:bg-[var(--color-clay-orange-dark)]
-              disabled:opacity-50 disabled:cursor-not-allowed
-              text-white font-bold
-              px-6 py-3 rounded-xl
-              transition-colors duration-200
-              cursor-pointer
-            "
-          >
-            <Save size={16} />
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
+      {/* Save */}
+      <div className="mt-6">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="
+            flex items-center gap-2
+            bg-[var(--color-clay-orange)]
+            hover:bg-[var(--color-clay-orange-dark)]
+            disabled:opacity-50 disabled:cursor-not-allowed
+            text-white font-bold
+            px-6 py-3 rounded-xl
+            transition-colors duration-200
+            cursor-pointer
+          "
+        >
+          <Save size={16} />
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
     </div>
   )
