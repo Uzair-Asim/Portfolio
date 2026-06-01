@@ -215,7 +215,10 @@ export default function Projects({ projects, githubUrl }: { projects: IProject[]
         {/* Projects grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...projects]
-            .sort((a, b) => a.order - b.order)
+            .sort((a, b) => {
+              if (a.featured === b.featured) return a.order - b.order
+              return a.featured ? -1 : 1
+            })
             .map((project, index) => (
               <TiltCard key={project.title} project={project} index={index} />
             ))}
