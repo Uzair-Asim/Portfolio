@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react'
 import type { IHero } from '@/models/Portfolio'
+import Toggle from '@/components/ui/Toggle'
 
 export default function HeroEditor({
   initialData,
@@ -214,39 +215,12 @@ export default function HeroEditor({
             <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[var(--color-clay-muted)] mb-2">
               Availability Status
             </label>
-            <button
-              type="button"
-              onClick={() => handleField('available', !form.available)}
-              className={`
-                relative inline-flex items-center gap-3
-                px-4 py-2.5 rounded-xl
-                border transition-all duration-200
-                font-semibold text-sm cursor-pointer
-                ${form.available
-                  ? 'bg-green-50 border-green-300 text-green-700'
-                  : 'bg-[var(--color-cream-100)] border-[var(--color-cream-300)] text-[var(--color-clay-muted)]'
-                }
-              `}
-            >
-              {/* Track */}
-              <span className={`
-                relative inline-flex
-                w-11 h-6 rounded-full
-                transition-colors duration-300 ease-in-out
-                flex-shrink-0
-                ${form.available ? 'bg-green-400' : 'bg-gray-200'}
-              `}>
-                {/* Thumb */}
-                <span className={`
-                  absolute top-1 left-1
-                  w-4 h-4 rounded-full
-                  bg-white shadow-md
-                  transition-transform duration-300 ease-in-out
-                  ${form.available ? 'translate-x-5' : 'translate-x-0'}
-                `} />
-              </span>
-              {form.available ? 'Available for hire' : 'Not available'}
-            </button>
+            <Toggle
+              value={form.available}
+              onChange={val => handleField('available', val)}
+              labelOn="Available for hire"
+              labelOff="Not available"
+            />
           </div>
         </div>
 

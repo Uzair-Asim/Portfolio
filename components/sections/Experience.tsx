@@ -158,10 +158,12 @@ export default function Experience({ experience }: { experience: IExperience[] }
                           <Calendar size={13} />
                           <span>{exp.period}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-sm text-[var(--color-clay-muted)] font-semibold">
-                          <MapPin size={13} />
-                          <span>{exp.location}</span>
-                        </div>
+                        {exp.location && (
+                          <div className="flex items-center gap-1.5 text-sm text-[var(--color-clay-muted)] font-semibold">
+                            <MapPin size={13} />
+                            <span>{exp.location}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

@@ -127,7 +127,7 @@ const ExperienceSchema = new Schema<IExperience>({
   role:     { type: String, required: true },
   type:     { type: String, required: true },
   period:   { type: String, required: true },
-  location: { type: String, required: true },
+  location: { type: String, default: ''    },
   current:  { type: Boolean, default: false },
   tech:     [{ type: String }],
   bullets:  [{ type: String }],
