@@ -22,7 +22,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[var(--color-cream-100)]">
-      <Navbar />
+      <Navbar
+        hasAchievements={!!portfolio?.achievements?.length}
+        hasCertifications={!!portfolio?.certifications?.length}
+      />
       <Hero           hero={portfolio?.hero                  ?? null} />
       <Skills         skills={portfolio?.skills              ?? []}   />
       <Experience     experience={portfolio?.experience      ?? []}   />

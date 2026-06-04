@@ -284,7 +284,7 @@ export default function Contact({ contact }: { contact: IContact | null }) {
 
               <p className="text-white/70 font-semibold leading-relaxed mb-8">
                 Whether it's a full-time role, a freelance project, or just
-                a conversation about tech — I'm always open to connecting
+                a conversation about tech... I'm always open to connecting
                 with the right people.
               </p>
 

@@ -15,15 +15,32 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Button from './ui/Button'
 
-const navLinks = [
-  { label: 'About',      href: '#hero'      },
+/**
+ * WHY static base links separate from conditional links:
+ * The achievements and certifications links only appear when
+ * those sections have content. Keeping the base links static
+ * and conditionally appending the rest makes the logic clear
+ * and easy to extend — adding a new conditional section is
+ * just one more prop and one more push() call.
+ */
+const BASE_LINKS = [
+  { label: 'About',      href: '#hero'       },
   { label: 'Skills',     href: '#skills'     },
   { label: 'Experience', href: '#experience' },
   { label: 'Projects',   href: '#projects'   },
-  { label: 'Contact',    href: '#contact'    },
 ]
 
-export default function Navbar() {
+const CONTACT_LINK = { label: 'Contact', href: '#contact' }
+
+interface NavbarProps {
+  hasAchievements?:   boolean
+  hasCertifications?: boolean
+}
+
+export default function Navbar({
+  hasAchievements   = false,
+  hasCertifications = false,
+}: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -38,6 +55,21 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  /**
+   * WHY build navLinks at render time not module level:
+   * The conditional links depend on props which aren't
+   * available at module load time. Building the array
+   * inside the component ensures it always reflects the
+   * current prop values. It's a tiny array so the cost
+   * of rebuilding it on each render is negligible.
+   */
+  const navLinks = [
+    ...BASE_LINKS,
+    ...(hasAchievements   ? [{ label: 'Achievements',    href: '#achievements'    }] : []),
+    ...(hasCertifications ? [{ label: 'Certifications',  href: '#certifications'  }] : []),
+    CONTACT_LINK,
+  ]
 
   return (
     <motion.nav
