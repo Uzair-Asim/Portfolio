@@ -10,21 +10,12 @@ import { getPortfolioData } from '@/lib/data'
  * finished HTML with data already in it.
  */
 
-const Skills = dynamic(() => import('@/components/sections/Skills'), {
-  loading: () => <div className="py-24" />,
-})
-
-const Experience = dynamic(() => import('@/components/sections/Experience'), {
-  loading: () => <div className="py-24" />,
-})
-
-const Projects = dynamic(() => import('@/components/sections/Projects'), {
-  loading: () => <div className="py-24" />,
-})
-
-const Contact = dynamic(() => import('@/components/sections/Contact'), {
-  loading: () => <div className="py-24" />,
-})
+const Skills          = dynamic(() => import('@/components/sections/Skills'),          { loading: () => <div className="py-24" /> })
+const Experience      = dynamic(() => import('@/components/sections/Experience'),      { loading: () => <div className="py-24" /> })
+const Achievements    = dynamic(() => import('@/components/sections/Achievements'),    { loading: () => <div className="py-24" /> })
+const Projects        = dynamic(() => import('@/components/sections/Projects'),        { loading: () => <div className="py-24" /> })
+const Certifications  = dynamic(() => import('@/components/sections/Certifications'), { loading: () => <div className="py-24" /> })
+const Contact         = dynamic(() => import('@/components/sections/Contact'),         { loading: () => <div className="py-24" /> })
 
 export default async function Home() {
   const portfolio = await getPortfolioData()
@@ -32,14 +23,13 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[var(--color-cream-100)]">
       <Navbar />
-      <Hero      hero={portfolio?.hero           ?? null} />
-      <Skills    skills={portfolio?.skills       ?? []}   />
-      <Experience experience={portfolio?.experience ?? []} />
-      <Projects
-        projects={portfolio?.projects ?? []}
-        githubUrl={portfolio?.contact?.github ?? '#'}
-      />
-      <Contact contact={portfolio?.contact ?? null} />
+      <Hero           hero={portfolio?.hero                  ?? null} />
+      <Skills         skills={portfolio?.skills              ?? []}   />
+      <Experience     experience={portfolio?.experience      ?? []}   />
+      <Achievements   achievements={portfolio?.achievements  ?? []}   />
+      <Projects       projects={portfolio?.projects          ?? []}   />
+      <Certifications certifications={portfolio?.certifications ?? []} />
+      <Contact        contact={portfolio?.contact            ?? null} />
     </main>
   )
 }

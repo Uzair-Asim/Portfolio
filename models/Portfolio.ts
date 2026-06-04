@@ -39,17 +39,29 @@ export interface IProject {
   order:       number
 }
 
-export interface IEducation {
-  degree:     string
-  school:     string
-  period:     string
-  location:   string
-  highlights: string[]
+/**
+ * WHY type field with enum:
+ * Achievements and certifications render differently —
+ * certifications show a Verify link when a URL is present.
+ * The type field drives this distinction without needing
+ * two separate schemas or sections.
+ */
+export interface IAchievement {
+  icon:        string
+  title:       string
+  description: string
+  issuer:      string
+  date:        string
+  order:       number
 }
 
-export interface IAchievement {
-  icon: string
-  text: string
+export interface ICertification {
+  icon:   string
+  title:  string
+  issuer: string
+  date:   string
+  url:    string
+  order:  number
 }
 
 export interface IHero {
@@ -86,14 +98,14 @@ export interface IContact {
 }
 
 export interface IPortfolio extends Document {
-  hero:         IHero
-  skills:       ISkillCategory[]
-  experience:   IExperience[]
-  projects:     IProject[]
-  education:    IEducation[]
-  achievements: IAchievement[]
-  contact:      IContact
-  updatedAt:    Date
+  hero:             IHero
+  skills:           ISkillCategory[]
+  experience:       IExperience[]
+  projects:         IProject[]
+  achievements:     IAchievement[]
+  certifications:   ICertification[]
+  contact:          IContact
+  updatedAt:        Date
 }
 
 /**
@@ -146,17 +158,22 @@ const ProjectSchema = new Schema<IProject>({
   order:       { type: Number, default: 0 },
 })
 
-const EducationSchema = new Schema<IEducation>({
-  degree:     { type: String, required: true },
-  school:     { type: String, required: true },
-  period:     { type: String, required: true },
-  location:   { type: String, required: true },
-  highlights: [{ type: String }],
+const AchievementSchema = new Schema<IAchievement>({
+  icon:        { type: String, required: true },
+  title:       { type: String, required: true },
+  description: { type: String, default: ''    },
+  issuer:      { type: String, default: ''    },
+  date:        { type: String, default: ''    },
+  order:       { type: Number, default: 0     },
 })
 
-const AchievementSchema = new Schema<IAchievement>({
-  icon: { type: String, required: true },
-  text: { type: String, required: true },
+const CertificationSchema = new Schema<ICertification>({
+  icon:   { type: String, required: true },
+  title:  { type: String, required: true },
+  issuer: { type: String, default: ''    },
+  date:   { type: String, default: ''    },
+  url:    { type: String, default: ''    },
+  order:  { type: Number, default: 0     },
 })
 
 const ContactSchema = new Schema<IContact>({
@@ -170,31 +187,15 @@ const ContactSchema = new Schema<IContact>({
 
 const PortfolioSchema = new Schema<IPortfolio>(
   {
-    hero:         { type: HeroSchema,            required: true },
-    skills:       { type: [SkillCategorySchema], default: []    },
-    experience:   { type: [ExperienceSchema],    default: []    },
-    projects:     { type: [ProjectSchema],       default: []    },
-    education:    { type: [EducationSchema],     default: []    },
-    achievements: { type: [AchievementSchema],   default: []    },
-    /**
-     * WHY contact is required:
-     * Unlike skills or projects which can be empty arrays,
-     * a portfolio without contact details is broken by definition.
-     * Making it required means the seed must always include it
-     * and Mongoose throws a clear error if it's missing rather
-     * than silently saving an incomplete document.
-     */
-    contact:      { type: ContactSchema,         required: true },
+    hero:           { type: HeroSchema,              required: true },
+    skills:         { type: [SkillCategorySchema],   default: []    },
+    experience:     { type: [ExperienceSchema],       default: []    },
+    projects:       { type: [ProjectSchema],          default: []    },
+    achievements:   { type: [AchievementSchema],      default: []    },
+    certifications: { type: [CertificationSchema],    default: []    },
+    contact:        { type: ContactSchema,            required: true },
   },
-  {
-    /**
-     * WHY timestamps: true:
-     * Automatically adds createdAt and updatedAt fields.
-     * updatedAt tells you when the portfolio was last edited
-     * which is useful for cache invalidation later.
-     */
-    timestamps: true,
-  }
+  { timestamps: true }
 )
 
 /**

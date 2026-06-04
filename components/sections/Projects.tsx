@@ -172,7 +172,7 @@ function TiltCard({ project, index }: {
   )
 }
 
-export default function Projects({ projects, githubUrl }: { projects: IProject[]; githubUrl: string }) {
+export default function Projects({ projects, githubUrl = '#'}: { projects: IProject[]; githubUrl?: string }) {
   return (
     <section
       id="projects"

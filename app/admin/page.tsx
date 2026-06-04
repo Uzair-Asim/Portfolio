@@ -48,12 +48,12 @@ export default async function AdminDashboard() {
       unit:   'projects',
     },
     {
-      title:  'Education',
-      href:   '/admin/education',
-      icon:   '🎓',
-      desc:   'Degrees, institutions, highlights',
-      count:  portfolio?.education?.length ?? 0,
-      unit:   'entries',
+      title: 'Achievements & Certifications',
+      href:  '/admin/achievements',
+      icon:  '🏆',
+      desc:  'Key achievements and certifications',
+      count: (portfolio?.achievements?.length ?? 0) + (portfolio?.certifications?.length ?? 0),
+      unit:  'entries',
     },
     {
       title:  'Contact',
