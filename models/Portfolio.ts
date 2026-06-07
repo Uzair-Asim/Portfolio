@@ -70,6 +70,7 @@ export interface IHero {
   location:    string
   description: string
   available:   boolean
+  chatEnabled: boolean
   stats: {
     number: string
     label:  string
@@ -116,11 +117,12 @@ export interface IPortfolio extends Document {
  */
 
 const HeroSchema = new Schema<IHero>({
-  name:        { type: String, required: true },
-  title:       { type: String, required: true },
-  location:    { type: String, required: true },
-  description: { type: String, required: true },
+  name:        { type: String,  required: true },
+  title:       { type: String,  required: true },
+  location:    { type: String,  required: true },
+  description: { type: String,  required: true },
   available:   { type: Boolean, default: true  },
+  chatEnabled: { type: Boolean, default: true  },
   stats: [{
     number: { type: String, required: true },
     label:  { type: String, required: true },

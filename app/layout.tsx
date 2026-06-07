@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Nunito, Space_Mono } from 'next/font/google'
+import ChatWidgetWrapper from '@/components/chat/ChatWidgetWrapper'
 import './globals.css'
 
 /**
@@ -72,6 +73,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <ChatWidgetWrapper />
       </body>
     </html>
   )

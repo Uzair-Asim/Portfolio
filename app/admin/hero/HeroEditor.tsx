@@ -222,6 +222,21 @@ export default function HeroEditor({
               labelOff="Not available"
             />
           </div>
+          {/* Chat Widget Toggle */}
+          <div>
+            <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[var(--color-clay-muted)] mb-2">
+              AI Chat Widget
+            </label>
+            <Toggle
+              value={form.chatEnabled ?? true}
+              onChange={val => handleField('chatEnabled', val)}
+              labelOn="Chat widget enabled"
+              labelOff="Chat widget disabled"
+            />
+            <p className="mt-1.5 font-mono text-[10px] text-[var(--color-clay-muted)]">
+              Disable when daily AI quota is exhausted or during maintenance.
+            </p>
+          </div>
         </div>
 
         {/* Stats */}

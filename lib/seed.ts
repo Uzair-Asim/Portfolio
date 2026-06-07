@@ -23,6 +23,7 @@ const seedData = {
     location:    'Islamabad, Pakistan',
     description: 'I build scalable full-stack applications with .NET and Azure, and craft intuitive user experiences with modern JS frameworks. Currently at XtremeLabs LLC, automating cloud infrastructure and shipping AI-powered tools.',
     available:   true,
+    chatEnabled: true,
     stats: [
       { number: '3+',  label: 'Years Exp'   },
       { number: '80%', label: 'Efficiency↑' },
