@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito, Space_Mono } from 'next/font/google'
 import ChatWidgetWrapper from '@/components/chat/ChatWidgetWrapper'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 
 /**
@@ -74,6 +75,7 @@ export default function RootLayout({
       >
         {children}
         <ChatWidgetWrapper />
+        <Analytics />
       </body>
     </html>
   )
