@@ -12,6 +12,7 @@ export default async function HeroAdminPage() {
         location:    '',
         description: '',
         available:   true,
+        chatEnabled:   true,
         stats:       [],
       }}
     />
