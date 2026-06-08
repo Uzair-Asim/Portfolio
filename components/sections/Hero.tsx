@@ -312,10 +312,9 @@ export default function Hero({ hero }: { hero: IHero | null }) {
               justify-center pb-6 pointer-events-none
             ">
               <span className="
-                hidden lg:block
                 font-mono text-xs font-bold
-                text-[var(--color-clay-navy)]/70
-                bg-white/80 backdrop-blur-sm
+                text-white
+                bg-[var(--color-clay-navy)]/80 backdrop-blur-sm
                 px-3 py-1.5 rounded-full shadow-sm
               ">
                 Hover to interact ✦
