@@ -73,6 +73,14 @@ export default function Hero({ hero }: { hero: IHero | null }) {
   const available = hero?.available ?? true
 
   function handleMouseEnter() {
+    /**
+     * WHY disable Spline on mobile:
+     * Spline scenes are designed for larger viewports.
+     * On mobile the container is too small for a good experience
+     * and touch devices don't have hover anyway.
+     * We only load the 3D scene on desktop (min-width: 1024px).
+     */
+    if (window.innerWidth < 1024) return
     isHoveredRef.current = true
     if (unmountTimerRef.current) {
       clearTimeout(unmountTimerRef.current)
@@ -280,7 +288,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' as const }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="relative h-[480px] lg:h-[600px] w-full rounded-3xl cursor-pointer"
+          className="relative h-[300px] sm:h-[400px] lg:h-[600px] w-full rounded-3xl cursor-pointer"
         >
           <motion.div
             animate={{ opacity: isHovered && isSplineLoaded ? 0 : 1 }}
@@ -295,7 +303,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
               src="/images/desk-scene.png"
               alt="3D desk setup"
               fill
-              className="object-cover object-center"
+              className="object-contain object-center"
               style={{ transform: 'scale(2.01)' }}
               priority
             />
@@ -304,6 +312,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
               justify-center pb-6 pointer-events-none
             ">
               <span className="
+                hidden lg:block
                 font-mono text-xs font-bold
                 text-[var(--color-clay-navy)]/70
                 bg-white/80 backdrop-blur-sm
@@ -351,7 +360,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 0.6 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-clay-muted)]"
+        className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-clay-muted)]"
       >
         <span className="text-xs font-mono font-bold uppercase tracking-widest">Scroll</span>
         <motion.div
