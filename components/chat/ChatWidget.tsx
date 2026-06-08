@@ -371,7 +371,7 @@ export default function ChatWidget({ enabled = true }: { enabled?: boolean }) {
       <motion.button
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 2, type: 'spring', stiffness: 200 }}
+        transition={{ delay: 1, type: 'spring', stiffness: 200 }}
         onClick={() => setOpen(p => !p)}
         className="
           fixed bottom-6 right-6 z-50
