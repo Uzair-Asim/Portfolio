@@ -280,7 +280,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' as const }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="relative h-[480px] lg:h-[600px] w-full rounded-3xl"
+          className="relative h-[480px] lg:h-[600px] w-full rounded-3xl cursor-pointer"
         >
           <motion.div
             animate={{ opacity: isHovered && isSplineLoaded ? 0 : 1 }}
