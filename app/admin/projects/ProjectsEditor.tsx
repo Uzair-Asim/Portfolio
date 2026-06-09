@@ -402,7 +402,7 @@ function NewProjectModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl border border-[var(--color-cream-300)] shadow-2xl w-full max-w-md overflow-hidden"
+        className="bg-white rounded-2xl border border-[var(--color-cream-300)] shadow-2xl w-full max-w-md"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

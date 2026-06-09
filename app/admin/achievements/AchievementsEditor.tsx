@@ -214,7 +214,7 @@ function NewAchievementModal({ onClose, onAdd, nextOrder }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-[var(--color-clay-navy)]/40 backdrop-blur-sm flex items-center justify-center px-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl border border-[var(--color-cream-300)] shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl border border-[var(--color-cream-300)] shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-[var(--color-cream-300)] bg-[var(--color-cream-50)]">
           <h2 className="text-lg font-black text-[var(--color-clay-navy)]">Add Achievement</h2>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--color-cream-200)] text-[var(--color-clay-muted)] cursor-pointer"><X size={18} /></button>

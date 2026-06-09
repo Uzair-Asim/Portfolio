@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
 import { ArrowLeft, Save, Plus, Trash2, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 import type { ISkillCategory } from '@/models/Portfolio'
+import EmojiPicker from '@/components/ui/EmojiPicker'
 
 import {
   DndContext,
@@ -107,7 +108,6 @@ function SortableCategoryCard({
       className={`
         bg-white rounded-2xl
         border border-[var(--color-cream-300)]
-        overflow-hidden
         ${isDragging ? 'shadow-xl' : ''}
         transition-shadow duration-200
       `}
@@ -154,17 +154,9 @@ function SortableCategoryCard({
         </div>
 
         {/* Icon */}
-        <input
-          type="text"
+        <EmojiPicker
           value={category.icon}
-          onChange={e => onUpdate('icon', e.target.value)}
-          className="
-            w-12 text-center text-xl
-            border border-[var(--color-cream-300)]
-            rounded-lg py-1.5
-            bg-white focus:outline-none
-            focus:border-[var(--color-clay-orange)]
-          "
+          onChange={val => onUpdate('icon', val)}
         />
 
         {/* Title */}
