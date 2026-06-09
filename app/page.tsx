@@ -30,7 +30,10 @@ export default async function Home() {
       <Skills         skills={portfolio?.skills              ?? []}   />
       <Experience     experience={portfolio?.experience      ?? []}   />
       <Achievements   achievements={portfolio?.achievements  ?? []}   />
-      <Projects       projects={portfolio?.projects          ?? []}   />
+      <Projects
+        projects={portfolio?.projects ?? []}
+        githubUrl={portfolio?.contact?.github ?? '#'}
+      />
       <Certifications certifications={portfolio?.certifications ?? []} />
       <Contact        contact={portfolio?.contact            ?? null} />
     </main>
