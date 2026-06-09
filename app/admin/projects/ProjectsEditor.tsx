@@ -282,7 +282,7 @@ function ProjectCard({
           />
         </div>
 
-        {/* Tech stack — draggable */}
+        {/* Tech stack - draggable */}
         <div>
           <label className={labelCls}>Tech Stack</label>
           <DndContext
@@ -316,7 +316,7 @@ function ProjectCard({
           </DndContext>
         </div>
 
-        {/* Features — draggable */}
+        {/* Features - draggable */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className={labelCls + ' mb-0'}>Features</label>
@@ -410,7 +410,7 @@ function NewProjectModal({
           <div>
             <h2 className="text-lg font-black text-[var(--color-clay-navy)]">Add New Project</h2>
             <p className="font-mono text-xs text-[var(--color-clay-muted)] mt-0.5">
-              Fill in the basics — add features and tech after.
+              Fill in the basics - add features and tech after.
             </p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--color-cream-200)] text-[var(--color-clay-muted)] transition-colors cursor-pointer">

@@ -67,7 +67,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
    * empty strings. Always code defensively around DB calls.
    */
   const stats    = hero?.stats    ?? FALLBACK_STATS
-  const title    = hero?.title    ?? 'Full-Stack Engineer — .NET · Azure · React'
+  const title    = hero?.title    ?? 'Full-Stack Engineer - .NET · Azure · React'
   const location = hero?.location ?? 'Islamabad, Pakistan'
   const desc     = hero?.description ?? 'Full-Stack Developer based in Islamabad, Pakistan.'
   const available = hero?.available ?? true
@@ -189,7 +189,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
           animate="visible"
           className="flex flex-col gap-6"
         >
-          {/* Available badge — driven by DB */}
+          {/* Available badge - driven by DB */}
           <motion.div variants={itemVariants}>
             <span className="
               inline-flex items-center gap-2
@@ -206,7 +206,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
             </span>
           </motion.div>
 
-          {/* Name — kept hardcoded intentionally */}
+          {/* Name - kept hardcoded intentionally */}
           <motion.div variants={itemVariants}>
             <h1 className="
               text-5xl md:text-6xl lg:text-7xl
@@ -221,7 +221,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
             </h1>
           </motion.div>
 
-          {/* Title + location — driven by DB */}
+          {/* Title + location - driven by DB */}
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
             <p className="text-xl font-bold text-[var(--color-clay-muted)]">
               {title}
@@ -232,7 +232,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
             </div>
           </motion.div>
 
-          {/* Description — driven by DB */}
+          {/* Description - driven by DB */}
           <motion.p
             variants={itemVariants}
             className="text-base leading-relaxed text-[var(--color-clay-muted)] max-w-md"
@@ -240,7 +240,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
             {desc}
           </motion.p>
 
-          {/* CTA buttons — static, no need for DB */}
+          {/* CTA buttons - static, no need for DB */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
             <Button
               size="lg"
@@ -259,7 +259,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
             </Button>
           </motion.div>
 
-          {/* Stats — driven by DB */}
+          {/* Stats - driven by DB */}
           <motion.div variants={itemVariants} className="flex gap-4 pt-2">
             {stats.map((stat) => (
               <div
@@ -281,7 +281,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
           </motion.div>
         </motion.div>
 
-        {/* RIGHT: Scene container — completely untouched */}
+        {/* RIGHT: Scene container - completely untouched */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -308,7 +308,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
               priority
             />
             <div className="
-              absolute inset-0 flex items-end
+              hidden lg:flex absolute inset-0 items-end
               justify-center pb-6 pointer-events-none
             ">
               <span className="
@@ -359,7 +359,7 @@ export default function Hero({ hero }: { hero: IHero | null }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 0.6 }}
-        className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-clay-muted)]"
+        className="hidden lg:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-clay-muted)]"
       >
         <span className="text-xs font-mono font-bold uppercase tracking-widest">Scroll</span>
         <motion.div

@@ -9,7 +9,7 @@ import { auth } from '@/lib/auth'
  * The proxy protects pages but API routes need their own
  * auth check. Without this anyone could call PATCH /api/content
  * directly from a terminal and modify your portfolio data.
- * Defense in depth — protect both the UI and the API.
+ * Defense in depth - protect both the UI and the API.
  */
 export async function GET() {
   try {
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest) {
   try {
     /**
      * WHY check session in PATCH but not GET:
-     * GET is public — anyone can read your portfolio data,
+     * GET is public - anyone can read your portfolio data,
      * that's the whole point. PATCH modifies data so only
      * you should be able to call it.
      */

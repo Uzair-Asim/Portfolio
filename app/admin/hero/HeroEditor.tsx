@@ -23,7 +23,7 @@ export default function HeroEditor({
 
   /**
    * WHY separate stat handlers:
-   * Stats is an array of objects — updating it requires
+   * Stats is an array of objects - updating it requires
    * replacing the whole array with a new one that has the
    * changed item. This is the standard React immutable
    * update pattern for arrays.
@@ -105,7 +105,7 @@ export default function HeroEditor({
           👋 Hero Section
         </h1>
         <p className="text-sm font-semibold text-[var(--color-clay-muted)]">
-          The first thing visitors see — your name, title, and intro.
+          The first thing visitors see - your name, title, and intro.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export default function HeroEditor({
               type="text"
               value={form.title}
               onChange={e => handleField('title', e.target.value)}
-              placeholder="Full-Stack Engineer — .NET · Azure · React"
+              placeholder="Full-Stack Engineer - .NET · Azure · React"
               className="
                 w-full px-4 py-3 rounded-xl
                 border border-[var(--color-cream-300)]

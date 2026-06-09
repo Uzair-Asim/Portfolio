@@ -17,7 +17,7 @@ export default function ContactEditor({
   /**
    * WHY spread initialData into state:
    * We copy the initial values into local state so the form
-   * is controlled — React manages every field value.
+   * is controlled - React manages every field value.
    * Changes stay local until the user clicks Save,
    * at which point we send them all to the API at once.
    */

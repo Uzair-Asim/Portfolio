@@ -9,7 +9,7 @@ import type { IProject } from '@/models/Portfolio'
 
 /**
  * WHY gradient is derived here not stored in DB:
- * Same reasoning as Skills — Tailwind classes are
+ * Same reasoning as Skills - Tailwind classes are
  * presentational, not data. We cycle through a palette
  * based on the project's order index so each card
  * automatically gets a distinct color without storing
@@ -43,7 +43,7 @@ function TiltCard({ project, index }: {
    * many projects exist. Project 0 gets gradient 0,
    * project 6 wraps back to gradient 0, etc.
    * Adding a 7th project in the admin panel automatically
-   * gets a color — no code change needed.
+   * gets a color - no code change needed.
    */
   const gradient = PROJECT_GRADIENTS[index % PROJECT_GRADIENTS.length]
 
@@ -105,7 +105,7 @@ function TiltCard({ project, index }: {
               </div>
             </div>
 
-            {/* Links — only shown if URL is not placeholder */}
+            {/* Links - only shown if URL is not placeholder */}
             <div className="flex gap-2">
               {project.githubUrl !== '#' && (
                 <a
@@ -207,7 +207,7 @@ export default function Projects({ projects, githubUrl = '#'}: { projects: IProj
             " />
           </div>
           <p className="mt-4 text-[var(--color-clay-muted)] font-semibold max-w-xl">
-            Shipped products that solve real problems — from social platforms
+            Shipped products that solve real problems - from social platforms
             to eCommerce systems with payment processing.
           </p>
         </motion.div>

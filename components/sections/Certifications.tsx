@@ -17,7 +17,7 @@ const containerVariants = {
 export default function Certifications({ certifications }: { certifications: ICertification[] }) {
   /**
    * WHY return null when empty:
-   * Certifications are future-proofed — the section only
+   * Certifications are future-proofed - the section only
    * appears when you actually have credentials to show.
    * Empty section = no section. No placeholder, no heading,
    * no wasted space.

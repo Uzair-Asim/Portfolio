@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose'
 /**
  * WHY TypeScript interfaces for each section:
  * These give us autocomplete and type safety everywhere
- * we use portfolio data — in API routes, in components,
+ * we use portfolio data - in API routes, in components,
  * in the admin panel. If we rename a field here TypeScript
  * immediately shows every place that needs updating.
  */
@@ -79,7 +79,7 @@ export interface IHero {
 
 /**
  * WHY IContact as a top-level schema:
- * Contact details appear in multiple places — Contact section,
+ * Contact details appear in multiple places - Contact section,
  * footer, Projects GitHub button, meta tags. Storing them once
  * in the DB and reading them everywhere means you update your
  * email in one place and it propagates across the entire site.

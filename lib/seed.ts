@@ -167,10 +167,10 @@ const seedData = {
   },
   {
     icon:        '🎓',
-    title:       'BSc Computer Science — Distinction',
+    title:       'BSc Computer Science - Distinction',
     description: 'Bachelor of Science in Computer Science, graduated with distinction.',
     issuer:      'International Islamic University Islamabad',
-    date:        '2019 — 2023',
+    date:        '2019 - 2023',
     order:       2,
   },
   {

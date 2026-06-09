@@ -51,7 +51,7 @@ export async function connectDB(): Promise<mongoose.Connection> {
        * WHY bufferCommands: false:
        * By default Mongoose buffers commands when not connected.
        * Disabling this means operations fail immediately if
-       * there's no connection — making errors visible right away
+       * there's no connection - making errors visible right away
        * instead of silently queuing and timing out later.
        */
       bufferCommands: false,

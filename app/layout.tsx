@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     'Islamabad'
   ],
   openGraph: {
-    title: 'Uzair Asim — Full-Stack Engineer',
+    title: 'Uzair Asim - Full-Stack Engineer',
     description: 'Full-Stack Developer specializing in .NET, Azure, and modern JS frameworks.',
     type: 'website',
   },

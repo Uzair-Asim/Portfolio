@@ -149,7 +149,7 @@ export default function Contact({ contact }: { contact: IContact | null }) {
         {/* Two column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-          {/* LEFT — Contact cards */}
+          {/* LEFT - Contact cards */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -167,7 +167,7 @@ export default function Contact({ contact }: { contact: IContact | null }) {
                * unfinished. We detect this and apply sm:col-span-2
                * so it stretches across the full row width.
                * On mobile (grid-cols-1) col-span-2 has no visual
-               * effect since there is only one column — every card
+               * effect since there is only one column - every card
                * is already full width. Safe to apply unconditionally
                * at the sm breakpoint only.
                */
@@ -235,7 +235,7 @@ export default function Contact({ contact }: { contact: IContact | null }) {
             })}
           </motion.div>
 
-          {/* RIGHT — CTA card */}
+          {/* RIGHT - CTA card */}
           <motion.div
             initial={{ opacity: 0, x: 32 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -346,11 +346,14 @@ export default function Contact({ contact }: { contact: IContact | null }) {
           "
         >
           <p className="font-mono text-xs text-[var(--color-clay-muted)] font-bold">
-            © {new Date().getFullYear()} {contact?.email?.split('@')[0] ?? 'Portfolio'}. Built with Next.js & ☕
+            © {new Date().getFullYear()} Portfolio By Uzair
+          </p>
+          {/* <p className="font-mono text-xs text-[var(--color-clay-muted)] font-bold">
+            © {new Date().getFullYear()} {contact?.email?.split('@')[0] ?? 'Portfolio'}.
           </p>
           <p className="font-mono text-xs text-[var(--color-clay-muted)] font-bold">
             {location} 🇵🇰
-          </p>
+          </p> */}
         </motion.div>
       </div>
     </section>

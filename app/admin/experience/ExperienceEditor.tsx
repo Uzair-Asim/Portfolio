@@ -69,13 +69,13 @@ const labelCls = `
 
 // ── Sort by end date ──
 function parseEndDate(period: string): number {
-  const end = period.split(' — ')[1]?.trim() ?? ''
+  const end = period.split(' - ')[1]?.trim() ?? ''
   if (end === 'Present') return Number.MAX_SAFE_INTEGER
   const parts = end.split(' ')
   const month = MONTH_INDEX[parts[0] ?? ''] ?? 0
   const year  = parseInt(parts[1] ?? '0', 10)
   if (year === 0) {
-    const start      = period.split(' — ')[0]?.trim() ?? ''
+    const start      = period.split(' - ')[0]?.trim() ?? ''
     const startParts = start.split(' ')
     const sm = MONTH_INDEX[startParts[0] ?? ''] ?? 0
     const sy = parseInt(startParts[1] ?? '0', 10)
@@ -92,7 +92,7 @@ function sortByDate(exps: IExperience[]): IExperience[] {
 
 // ── Validation helpers ──
 function validatePeriod(period: string, isCurrent: boolean): string | null {
-  const parts      = period ? period.split(' — ') : []
+  const parts      = period ? period.split(' - ') : []
   const startStr   = parts[0]?.trim() ?? ''
   const startSplit = startStr.split(' ')
   const validStart = MONTHS.includes(startSplit[0]) && !isNaN(parseInt(startSplit[1]))
@@ -162,7 +162,7 @@ function PeriodPicker({
   onChange:     (val: string) => void
   periodError?: string
 }) {
-  const parts     = period ? period.split(' — ') : []
+  const parts     = period ? period.split(' - ') : []
   const startPart = parts[0]?.trim() ?? ''
   const endPart   = parts[1]?.trim() ?? ''
 
@@ -180,7 +180,7 @@ function PeriodPicker({
       ? 'Present'
       : em || ey ? `${em} ${ey}`.trim() : ''
 
-    if (start && end) onChange(`${start} — ${end}`)
+    if (start && end) onChange(`${start} - ${end}`)
     else if (start)   onChange(start)
     else              onChange('')
   }
@@ -480,8 +480,8 @@ function ExperienceCard({
             value={exp.current}
             onChange={val => {
               onUpdate('current', val)
-              const startPart = exp.period.split(' — ')[0] ?? ''
-              if (val) onUpdate('period', startPart ? `${startPart} — Present` : '')
+              const startPart = exp.period.split(' - ')[0] ?? ''
+              if (val) onUpdate('period', startPart ? `${startPart} - Present` : '')
               else     onUpdate('period', startPart)
             }}
             labelOn="Current role"
@@ -501,7 +501,7 @@ function ExperienceCard({
           />
         </div>
 
-        {/* Tech — draggable */}
+        {/* Tech - draggable */}
         <div>
           <label className={labelCls}>Tech Stack</label>
           <DndContext
@@ -535,7 +535,7 @@ function ExperienceCard({
           </DndContext>
         </div>
 
-        {/* Bullets — draggable */}
+        {/* Bullets - draggable */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className={labelCls + ' mb-0'}>Bullet Points</label>
@@ -636,7 +636,7 @@ function NewExperienceModal({
           <div>
             <h2 className="text-lg font-black text-[var(--color-clay-navy)]">Add New Role</h2>
             <p className="font-mono text-xs text-[var(--color-clay-muted)] mt-0.5">
-              Fill in the basics — add bullets and tech after.
+              Fill in the basics - add bullets and tech after.
             </p>
           </div>
           <button
@@ -699,8 +699,8 @@ function NewExperienceModal({
               value={current}
               onChange={val => {
                 setCurrent(val)
-                const startPart = period.split(' — ')[0] ?? ''
-                if (val) setPeriod(startPart ? `${startPart} — Present` : '')
+                const startPart = period.split(' - ')[0] ?? ''
+                if (val) setPeriod(startPart ? `${startPart} - Present` : '')
                 else     setPeriod(startPart)
               }}
               labelOn="Current role"
@@ -806,7 +806,7 @@ export default function ExperienceEditor({
        * WHY count total errors for the toast message:
        * Instead of a generic "fix errors" message, we tell
        * the user exactly how many fields need attention and
-       * which entries have problems — specific and actionable.
+       * which entries have problems - specific and actionable.
        */
       const totalErrors  = Object.values(errors).reduce((sum, e) => sum + Object.keys(e).length, 0)
       const entryCount   = Object.keys(errors).length

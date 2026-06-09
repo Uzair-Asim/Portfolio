@@ -10,15 +10,15 @@ function buildSystemPrompt(portfolio: any): string {
 IMPORTANT RULES:
 - Only answer questions based on the information provided below
 - Never make up or assume information not provided
-- Keep responses concise and professional — 2-4 sentences max unless a detailed answer is clearly needed
-- Speak naturally about ${portfolio.hero?.name ?? 'the developer'} in third person. Don't start every sentence with his name — use "he", "his", "him" after the first mention. For example: "Uzair is a Full-Stack Engineer. He specializes in .NET and Azure, and has experience building..." rather than "Uzair does this, Uzair does that, Uzair has this."- If asked something you don't have information about, say so honestly
+- Keep responses concise and professional - 2-4 sentences max unless a detailed answer is clearly needed
+- Speak naturally about ${portfolio.hero?.name ?? 'the developer'} in third person. Don't start every sentence with his name - use "he", "his", "him" after the first mention. For example: "Uzair is a Full-Stack Engineer. He specializes in .NET and Azure, and has experience building..." rather than "Uzair does this, Uzair does that, Uzair has this."- If asked something you don't have information about, say so honestly
 - Never discuss politics, personal opinions, or anything unrelated to the professional profile
 - If asked who you are, say you are an AI assistant for ${portfolio.hero?.name ?? 'this developer'}'s portfolio
 - When asked about availability, never say "not available". If not actively looking, say something like "open to the right opportunities" or "happy to hear about interesting roles"
 - Never reference the portfolio, resume, or any document. Don't say "according to his portfolio", "listed in his portfolio", "based on the information provided", "his portfolio shows", or anything similar. Just state facts about Uzair directly as if you know him personally.
 - Use markdown formatting in responses: **bold** for names and key terms, bullet points for lists, and line breaks between separate topics. Keep responses well structured and easy to scan.
 - Never start responses by introducing yourself or stating you are an AI assistant. Just answer the question directly.
-- Always refer to ${portfolio.hero?.name ?? 'the developer'} by first name only — "${portfolio.hero?.name?.split(' ')[0] ?? 'Uzair'}" not the full name. Never use the full name "${portfolio.hero?.name}" in responses until asked to.
+- Always refer to ${portfolio.hero?.name ?? 'the developer'} by first name only - "${portfolio.hero?.name?.split(' ')[0] ?? 'Uzair'}" not the full name. Never use the full name "${portfolio.hero?.name}" in responses until asked to.
 
 PORTFOLIO INFORMATION:
 
@@ -26,7 +26,7 @@ PORTFOLIO INFORMATION:
 Name: ${portfolio.hero?.name}
 Title: ${portfolio.hero?.title}
 Location: ${portfolio.hero?.location}
-Availability: ${portfolio.hero?.available ? 'Actively looking for new opportunities and available for hire' : 'Open to opportunities — not actively looking but will consider the right role'}
+Availability: ${portfolio.hero?.available ? 'Actively looking for new opportunities and available for hire' : 'Open to opportunities - not actively looking but will consider the right role'}
 Bio: ${portfolio.hero?.description}
 
 ## Skills
@@ -147,14 +147,14 @@ export async function POST(req: NextRequest) {
      * WHY specific error messages:
      * Generic "something went wrong" is unhelpful and makes
      * the bot look broken. Specific messages tell the visitor
-     * exactly what happened and what to do — builds trust
+     * exactly what happened and what to do - builds trust
      * even when things aren't working.
      */
     const message = error?.message ?? ''
 
     if (message.includes('429') || message.includes('quota') || message.includes('Too Many Requests')) {
       return NextResponse.json(
-        { error: 'The AI assistant has reached its daily request limit. Please try again tomorrow — the quota resets at midnight.' },
+        { error: 'The AI assistant has reached its daily request limit. Please try again tomorrow - the quota resets at midnight.' },
         { status: 429 }
       )
     }

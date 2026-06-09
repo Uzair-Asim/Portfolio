@@ -203,7 +203,7 @@ function SortableCategoryCard({
         </button>
       </div>
 
-      {/* Skills — draggable horizontally */}
+      {/* Skills - draggable horizontally */}
       <div className="p-4">
         <DndContext
           sensors={skillSensors}
@@ -509,7 +509,7 @@ export default function SkillsEditor({
         </button>
       </div>
 
-      {/* Categories — draggable */}
+      {/* Categories - draggable */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

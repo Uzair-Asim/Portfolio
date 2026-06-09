@@ -20,7 +20,7 @@ import Button from './ui/Button'
  * The achievements and certifications links only appear when
  * those sections have content. Keeping the base links static
  * and conditionally appending the rest makes the logic clear
- * and easy to extend — adding a new conditional section is
+ * and easy to extend - adding a new conditional section is
  * just one more prop and one more push() call.
  */
 const BASE_LINKS = [
@@ -98,7 +98,7 @@ export default function Navbar({
         <span className="hidden sm:block text-sm">uzair.dev</span>
       </Link>
 
-      {/* Nav links — hidden on mobile */}
+      {/* Nav links - hidden on mobile */}
       <ul className="hidden md:flex items-center gap-8">
         {navLinks.map((link) => (
           <li key={link.href}>

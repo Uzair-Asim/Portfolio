@@ -98,7 +98,7 @@ export default async function LoginPage({
           font-mono text-xs
           text-[var(--color-clay-muted)]
         ">
-          uzair.dev — portfolio admin
+          uzair.dev - portfolio admin
         </p>
       </div>
     </main>

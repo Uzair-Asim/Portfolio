@@ -5,7 +5,7 @@ import { getPortfolioData } from '@/lib/data'
 
 /**
  * WHY async:
- * Server components can be async — they await data before
+ * Server components can be async - they await data before
  * rendering. The client never sees this await, only the
  * finished HTML with data already in it.
  */

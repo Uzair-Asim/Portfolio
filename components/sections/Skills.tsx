@@ -6,10 +6,10 @@ import type { ISkillCategory } from '@/models/Portfolio'
 
 /**
  * WHY color and borderColor are derived here not in the schema:
- * These are purely presentational — they're Tailwind classes
+ * These are purely presentational - they're Tailwind classes
  * that control how each card looks. They have nothing to do
  * with the actual skill data. Storing Tailwind classes in a
- * database is an anti-pattern — if you ever change your design
+ * database is an anti-pattern - if you ever change your design
  * system you'd have to update the DB instead of just CSS.
  * We map category titles to colors here in the component
  * where presentation decisions belong.
@@ -112,7 +112,7 @@ export default function Skills({ skills }: { skills: ISkillCategory[] }) {
             mt-4 text-[var(--color-clay-muted)]
             font-semibold max-w-xl
           ">
-            3 years building across the full stack — from .NET APIs
+            3 years building across the full stack - from .NET APIs
             to React frontends to Azure cloud infrastructure.
           </p>
         </motion.div>

@@ -27,7 +27,7 @@ export async function getPortfolioData(): Promise<IPortfolio | null> {
        * The page is cached and served statically.
        * Every 3600 seconds (1 hour) Next.js regenerates it
        * in the background with fresh data.
-       * For a portfolio this is perfect — content doesn't
+       * For a portfolio this is perfect - content doesn't
        * change every second, but you want changes to appear
        * within a reasonable time after editing.
        *

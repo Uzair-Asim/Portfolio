@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react'
  * Full emoji pickers (emoji-mart etc.) are 200KB+ and include
  * thousands of irrelevant emojis. For a professional portfolio
  * we only need tech/work/project relevant ones. A curated grid
- * loads instantly and is faster to use — no searching needed.
+ * loads instantly and is faster to use - no searching needed.
  */
 const PROFESSIONAL_EMOJIS = [
   // Tech & Development
@@ -43,7 +43,7 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
 
   /**
    * WHY close on outside click:
-   * Standard dropdown behaviour — clicking anywhere outside
+   * Standard dropdown behaviour - clicking anywhere outside
    * the picker closes it without requiring an explicit close button.
    */
   useEffect(() => {

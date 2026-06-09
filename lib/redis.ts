@@ -9,7 +9,7 @@ import { Redis } from '@upstash/redis'
  *
  * WHY return null when env vars missing:
  * In local development without Redis configured the chat
- * still works — rate limiting is simply skipped.
+ * still works - rate limiting is simply skipped.
  */
 export function getRedis(): Redis | null {
   if (
