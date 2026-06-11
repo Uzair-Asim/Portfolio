@@ -45,10 +45,6 @@ const CARD_STYLES = {
     color:  'hover:border-blue-300 hover:shadow-blue-100',
     iconBg: 'bg-blue-50 text-blue-600',
   },
-  location: {
-    color:  'hover:border-purple-300 hover:shadow-purple-100',
-    iconBg: 'bg-purple-50 text-purple-600',
-  },
 }
 
 const cardVariants = {
@@ -64,7 +60,6 @@ export default function Contact({ contact }: { contact: IContact | null }) {
   const email    = contact?.email    ?? ''
   const phone    = contact?.phone    ?? ''
   const linkedin = contact?.linkedin ?? '#'
-  const location = contact?.location ?? ''
 
   const contactItems = [
     {
@@ -87,15 +82,6 @@ export default function Contact({ contact }: { contact: IContact | null }) {
       value:  'Connect with me',
       href:   linkedin,
       ...CARD_STYLES.linkedin,
-    },
-    {
-      icon:   MapPin,
-      label:  'Location',
-      value:  location,
-      href:   location
-        ? `https://maps.google.com/?q=${encodeURIComponent(location)}`
-        : '#',
-      ...CARD_STYLES.location,
     },
     ...(contact?.website ? [{
       icon:   ExternalLink,
